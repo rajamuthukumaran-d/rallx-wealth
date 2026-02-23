@@ -1,27 +1,27 @@
 # Product Requirements Document (PRD): Rallx Wealth
 
+**File Context:** To be used as the primary context for AI code generation (Antigravity).
+
 ## 1. Project Overview
 
 **Name:** rallx-wealth
 **Type:** Mobile Application (iOS & Android)
 **Architecture:** Offline-first with backend synchronization
-**Primary Goal:** A comprehensive wealth tracking application allowing users to manage income, expenses, investments, assets, and debts with granular analytics.
+**Primary Goal:** A comprehensive wealth tracking application allowing users to manage income, expenses, investments, assets, and debts with granular analytics and split-payment capabilities.
 
 ## 2. Tech Stack
 
 - **Framework:** React Native
-- **Styling:** NativeWind (Tailwind CSS for React Native)
+- **Styling:** NativeWind
 - **UI Components:** React Native Paper
 - **Local Database:** WatermelonDB (SQLite)
-- **Sync Backend:** Express.js & MongoDB (Note: Backend implementation is out of scope for this prompt; focus strictly on React Native + WatermelonDB sync logic).
+- **Sync Backend:** Express.js & MongoDB (Focus strictly on React Native + WatermelonDB sync architecture for this phase).
 
-## 3. App Navigation Structure
+## 3. App Navigation Structure (Bottom Tab Navigator)
 
-Implement a Bottom Tab Navigator with the following screens:
-
-1.  **Home / Dashboard:** High-level summary of net worth, recent transactions, quick-add action buttons, and **a dedicated section displaying all active budgets with their current progress**.
-2.  **Transactions:** A searchable, filterable list of all income and expense transactions.
-3.  **Net Worth:** Visual breakdown with three main summary cards (Assets, Investments, Debts) showing the combined total of each class. Clicking on any of the three summary cards navigates the user to a dedicated page listing all individual components within that specific class.
+1.  **Home / Dashboard:** High-level summary of net worth, recent transactions, quick-add action buttons, and a dedicated section displaying all active budgets with their current progress.
+2.  **Transactions:** A searchable, filterable list of all income, expense, and transfer transactions.
+3.  **Net Worth:** Visual breakdown with three main summary cards (Assets, Investments, Debts) showing the combined total of each class. Clicking a summary card navigates to a dedicated page listing all individual components within that specific class.
 4.  **Settings:** \* Change Theme (Dark/Light mode).
     - Export/Import raw SQLite Database.
     - Manage Categories.
@@ -37,54 +37,57 @@ Implement a Bottom Tab Navigator with the following screens:
 
 ### B. Transactions, Categories & Split Payments
 
-- Users can log income and expenses.
-- **Split Payments:** When adding an expense, users can split the payment across multiple sources (e.g., paying partially with a Digital Wallet and the rest via Bank/UPI). The UI must support dynamically adding multiple payment sources to a single transaction.
-- Every transaction must be tied to a customizable Category.
-- Categories are user-defined (Settings -> Manage Categories).
+- Log income, expenses, and transfers.
+- **Split Payments:** When adding a transaction, users can split the payment across multiple sources (e.g., partial payment from a Wallet, partial from a Credit Card). The UI must support dynamically adding multiple payment sources.
+- **Transfers:** Support moving money between assets or paying off a debt (credit card) from an asset (bank).
+- Categories are user-defined and filtered by type.
 
 ### C. Budgeting
 
-- Users can allocate budgets on a Weekly, Bi-weekly, or Monthly basis.
-- **Rollover:** Users have a toggle option to enable/disable rolling over unspent budget amounts to the next period.
+- Allocate budgets on a Weekly, Bi-weekly, or Monthly basis.
+- **Rollover:** Toggle option to enable/disable rolling over unspent budget amounts to the next period.
 
 ### D. Assets & Investments
 
-- **Assets:** Track balances of Bank accounts, Digital Wallets, App Credit, and Cash in hand.
-- **Investments:** Manually enter investment values. (Architecture should support future integration of live market data).
+- **Assets:** Track balances of Banks, Wallets, Cash, FDs, etc. Includes settings for minimum balances and maturity dates.
+- **Investments:** Manually enter and track investment values (Stocks, MFs, Gold, Crypto, etc.). Architecture must support future live-data API integration.
 
 ### E. Debts & EMI (Auto-Deduction)
 
-- Track Credit Cards, Loans, and EMIs.
-- **Auto-Debit Logic:** When adding a debt/EMI, the user can toggle "Auto-Debit". If enabled, they must select a linked Asset account. The app should process this deduction automatically on the due date.
+- Track Loans, Credit Cards, EMIs, and Pay Later accounts.
+- **Auto-Debit Logic:** When adding a debt/EMI, toggle "Auto-Debit" and link to a specific `asset_id`. The app automatically processes this deduction on the due date.
 
 ### F. Offline-First Sync (WatermelonDB)
 
-- Must use WatermelonDB's `synchronize` function.
+- Use WatermelonDB's `synchronize` function.
 - Conflict resolution strategy: **Timestamp-based** (`updated_at` wins).
+- Implement soft deletes.
 
 ## 5. WatermelonDB Schema Definition
 
-Generate the React Native WatermelonDB setup using the following schema structure. All tables must include `id`, `user_id`, `is_deleted`, `created_at` and `updated_at` for sync purposes.
+Generate the React Native WatermelonDB schema using the exact structure below.
+**Crucial AI Instruction:** Every table must implicitly or explicitly include `created_at` (number), `updated_at` (number), and `is_deleted` (boolean) to support WatermelonDB's sync protocol.
 
 - **categories:**
   - `name` (string)
   - `icon` (string)
+  - `type` (string) - 'income', 'expense', 'transfer'
 - **assets:**
   - `name` (string)
   - `type` (string) - 'bank', 'wallet', 'cash', 'FD', etc.
-  - `min_balance` (number, optional) - minimum balance to be maintained in the asset
+  - `min_balance` (number, optional)
   - `balance` (number)
   - `interest_rate` (number, optional)
-  - `include_in_bal` (boolean) - true if the asset should be included in the net worth calculation
-  - `maturity_date` (number, optional) - maturity date of the FD
+  - `include_in_bal` (boolean)
+  - `maturity_date` (number, optional)
 - **investments:**
   - `name` (string)
   - `type` (string) - 'stock', 'mutual_fund', 'gold', 'silver', 'crypto', 'bonds', 'ETF', etc.
   - `symbol` (string, optional)
   - `invested_amount` (number)
-  - `current_value` (number) - Manually updated for now
+  - `current_value` (number)
   - `quantity` (number, optional)
-  - `platform` (string, optional) - platform where the investment is held
+  - `platform` (string, optional)
 - **debts:**
   - `name` (string)
   - `type` (string) - 'loan', 'credit_card', 'emi', 'pay_later'
@@ -94,35 +97,33 @@ Generate the React Native WatermelonDB setup using the following schema structur
   - `emi_amount` (number, optional)
   - `due_date` (number, optional)
   - `auto_debit` (boolean)
-  - `asset_id` (string, optional) - Foreign key to `assets`
-  - `default_reward_points` (number, optional) - default reward points for making payment using credit card
-  - `round_off_amount` (number, optional) - round off amount for making payment using credit card
-  - `status` (string, optional) - 'active', 'closed'
-
-* **transactions:**
+  - `asset_id` (string, optional) - Foreign key to `assets` (for auto-debit)
+  - `default_reward_points` (number, optional)
+  - `round_off_amount` (number, optional)
+  - `status` (string) - 'active', 'closed'
+- **transactions:**
   - `total_amount` (number)
-  - `type` (string) - 'income', 'expense'
+  - `type` (string) - 'income', 'expense', 'transfer'
   - `date` (number) - timestamp
   - `note` (string, optional)
   - `category_id` (string) - Foreign key to `categories`
-
-* **transaction_amounts:** (New table for handling multiple payment sources)
-  - `transaction_id` (string) - Foreign key to `transactions`
-  - `asset_id` (string) - Foreign key to `assets`
-  - `debt_id` (string, optional) - Used if paying via credit card/pay later
-  - `amount` (number) - The specific amount deducted/added to this specific asset
-
+- **transaction_amounts:** (Handles multiple payment sources & split payments)
+  - `transaction_id` (string) - Foreign key to `transactions`. AI must use `@relation` and `@children` decorators properly.
+  - `asset_id` (string, optional) - Foreign key to `assets`. Used if paid via bank/wallet/cash.
+  - `debt_id` (string, optional) - Foreign key to `debts`. Used if paid via credit card/pay later.
+  - `amount` (number)
 - **budgets:**
   - `amount` (number)
   - `period` (string) - 'weekly', 'bi-weekly', 'monthly'
+  - `start_date` (number) - timestamp to anchor the rolling period
   - `category_id` (string, optional) - If null, applies to overall spend
   - `rollover_enabled` (boolean)
-  - `start_date` (number) - timestamp to anchor the rolling period. Default 1st of the month
 
 ## 6. Execution Instructions for AI
 
-1.  Initialize the React Native project with the specified tech stack.
-2.  Set up the WatermelonDB schema, models, and Sync wrapper exactly as outlined above.
-3.  Implement the React Navigation tab structure.
-4.  Build the UI components using NativeWind and React Native Paper, focusing on the Settings tab and the Auto-Debit toggle logic first to establish the data flow.
-5.  Include logic for exporting/importing the raw SQLite `.db` file using `react-native-fs` or `expo-file-system`.
+1. Initialize the React Native project with the specified tech stack.
+2. Set up the WatermelonDB `schema.js`, ensuring all columns map correctly to standard types (`string`, `number`, `boolean`).
+3. Create the WatermelonDB Model classes. Pay special attention to the one-to-many relationship between `Transaction` and `TransactionAmount` using WatermelonDB decorators (`@children`, `@relation`).
+4. Implement the React Navigation tab structure.
+5. Build the UI components using NativeWind and React Native Paper. Start with the Dashboard and the Split Payment UI logic within the Transaction creation screen.
+6. Implement raw SQLite `.db` file export/import functionality using a suitable file system library.
