@@ -1,0 +1,18 @@
+import { Model } from "@nozbe/watermelondb";
+import { date, field, readonly, text } from "@nozbe/watermelondb/decorators";
+
+export default class Asset extends Model {
+  static table = "assets";
+
+  @text("name") name!: string;
+  @text("type") type!: string;
+  @field("min_balance") minBalance?: number;
+  @field("balance") balance!: number;
+  @field("interest_rate") interestRate?: number;
+  @field("include_in_bal") includeInBal!: boolean;
+  @date("maturity_date") maturityDate?: number;
+
+  @readonly @date("created_at") createdAt!: number;
+  @readonly @date("updated_at") updatedAt!: number;
+  @field("is_deleted") isDeleted!: boolean;
+}
