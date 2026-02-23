@@ -104,13 +104,15 @@ Generate the React Native WatermelonDB schema using the exact structure below.
 - **transactions:**
   - `total_amount` (number)
   - `type` (string) - 'income', 'expense', 'transfer'
-  - `date` (number) - timestamp
+  - `is_refund` (boolean) - Default false.
+  - `linked_transaction_id` (string, optional) - Self-referencing foreign key pointing to the original transaction being refunded.
+  - `date` (number) - timestamp of when the transaction (or refund) occurred.
   - `note` (string, optional)
   - `category_id` (string) - Foreign key to `categories`
-- **transaction_amounts:** (Handles multiple payment sources & split payments)
-  - `transaction_id` (string) - Foreign key to `transactions`. AI must use `@relation` and `@children` decorators properly.
-  - `asset_id` (string, optional) - Foreign key to `assets`. Used if paid via bank/wallet/cash.
-  - `debt_id` (string, optional) - Foreign key to `debts`. Used if paid via credit card/pay later.
+- **transaction_amounts:** (Handles split payments and refund destinations)
+  - `transaction_id` (string) - Foreign key to `transactions`.
+  - `asset_id` (string, optional) - Foreign key to `assets`. Used if paid/refunded via bank/wallet/cash.
+  - `debt_id` (string, optional) - Foreign key to `debts`. Used if paid/refunded via credit card/pay later.
   - `amount` (number)
 - **budgets:**
   - `amount` (number)
