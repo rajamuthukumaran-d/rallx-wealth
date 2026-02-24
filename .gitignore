@@ -41,3 +41,12 @@ app-example
 # generated native folders
 /ios
 /android
+
+# temp and backups
+*.tmp
+*.bak
+*.backup
+*.temp
+
+# mockups
+mockups/
