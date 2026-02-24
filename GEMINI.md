@@ -16,10 +16,12 @@
 - **UI Components:** React Native Paper
 - **Local Database:** WatermelonDB (SQLite)
 - **Sync Backend:** Express.js & MongoDB (Focus strictly on React Native + WatermelonDB sync architecture for this phase).
+- **Package Manager:** pnpm
+- **MCP Server:** stitch (store pictures from stitch inside mockups folder)
 
 ## 3. App Navigation Structure (Bottom Tab Navigator)
 
-1.  **Home / Dashboard:** High-level summary of net worth, recent transactions, quick-add action buttons, and a dedicated section displaying all active budgets with their current progress.
+1.  **Home:** High-level summary of net worth, recent transactions, quick-add action buttons, and a dedicated section displaying all active budgets with their current progress.
 2.  **Transactions:** A searchable, filterable list of all income, expense, and transfer transactions.
 3.  **Net Worth:** Visual breakdown with three main summary cards (Assets, Investments, Debts) showing the combined total of each class. Clicking a summary card navigates to a dedicated page listing all individual components within that specific class.
 4.  **Settings:** \* Change Theme (Dark/Light mode).
@@ -127,5 +129,5 @@ Generate the React Native WatermelonDB schema using the exact structure below.
 2. Set up the WatermelonDB `schema.js`, ensuring all columns map correctly to standard types (`string`, `number`, `boolean`).
 3. Create the WatermelonDB Model classes. Pay special attention to the one-to-many relationship between `Transaction` and `TransactionAmount` using WatermelonDB decorators (`@children`, `@relation`).
 4. Implement the React Navigation tab structure.
-5. Build the UI components using NativeWind and React Native Paper. Start with the Dashboard and the Split Payment UI logic within the Transaction creation screen.
+5. Build the UI components using NativeWind and React Native Paper. Start with the Home and the Split Payment UI logic within the Transaction creation screen.
 6. Implement raw SQLite `.db` file export/import functionality using a suitable file system library.
