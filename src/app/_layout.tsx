@@ -8,14 +8,20 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
+import { useEffect } from "react";
 import { useColorScheme } from "react-native";
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 import "../../global.css";
+import { seedDefaultCategories } from "../data/seed";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const { theme } = useMaterial3Theme({ fallbackSourceColor: "#9966cc" });
+
+  useEffect(() => {
+    seedDefaultCategories();
+  }, []);
 
   const paperDark = {
     ...MD3DarkTheme,

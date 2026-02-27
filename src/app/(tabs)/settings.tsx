@@ -1,3 +1,4 @@
+import { useRouter as useExpoRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import {
@@ -12,6 +13,7 @@ import {
 } from "react-native-paper";
 
 export default function SettingsScreen() {
+  const router = useExpoRouter();
   const theme = useTheme();
   // Using generic state for mock purposes
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -109,7 +111,7 @@ export default function SettingsScreen() {
               title="Manage Categories"
               left={(props) => <List.Icon {...props} icon="shape" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => {}}
+              onPress={() => router.push("/(models)/(category)")}
             />
             <Divider />
             <List.Item
