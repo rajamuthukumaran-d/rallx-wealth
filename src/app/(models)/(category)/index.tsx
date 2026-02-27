@@ -3,11 +3,12 @@ import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import {
-    Appbar,
-    FAB,
-    List,
-    SegmentedButtons,
-    useTheme,
+  Appbar,
+  FAB,
+  IconButton,
+  List,
+  SegmentedButtons,
+  useTheme,
 } from "react-native-paper";
 import { database } from "../../../data";
 import Category from "../../../data/models/Category";
@@ -42,14 +43,28 @@ function ManageCategoriesScreen({ categories }: { categories: Category[] }) {
           <SegmentedButtons
             value={filterType}
             onValueChange={setFilterType}
+            theme={{
+              colors: {
+                secondaryContainer:
+                  filterType === "income"
+                    ? "#1b5e20"
+                    : theme.colors.errorContainer,
+                onSecondaryContainer:
+                  filterType === "income"
+                    ? "#ffffff"
+                    : theme.colors.onErrorContainer,
+              },
+            }}
             buttons={[
               {
                 value: "income",
                 label: "Income",
+                checkedColor: "#ffffff",
               },
               {
                 value: "expense",
                 label: "Expense",
+                checkedColor: theme.colors.onErrorContainer,
               },
             ]}
           />
@@ -75,9 +90,23 @@ function ManageCategoriesScreen({ categories }: { categories: Category[] }) {
                   borderBottomColor: theme.colors.surfaceVariant,
                 }}
                 left={(props) => <List.Icon {...props} icon={category.icon} />}
-                right={(props) => <List.Icon {...props} icon="delete" />}
+                right={(props) => (
+                  <IconButton
+                    {...props}
+                    icon="delete"
+                    onPress={async () => {
+                      try {
+                        await database.write(async () => {
+                          await category.markAsDeleted();
+                        });
+                      } catch (e) {
+                        console.error(e);
+                      }
+                    }}
+                  />
+                )}
                 onPress={() => {
-                  // TODO: Navigate to category edit screen
+                  router.push(`/(models)/(category)/${category.id}`);
                 }}
               />
             ))}
@@ -94,7 +123,7 @@ function ManageCategoriesScreen({ categories }: { categories: Category[] }) {
           icon="plus"
           className="absolute right-4 bottom-8"
           onPress={() => {
-            // TODO: Navigate to add category screen
+            router.push("/(models)/(category)/new");
           }}
         />
       </View>
