@@ -13,6 +13,54 @@ import {
 import { database } from "../../../data";
 import Category from "../../../data/models/Category";
 
+const CategoryListItem = withObservables(
+  ["category"],
+  ({ category }: { category: Category }) => ({
+    category,
+  }),
+)(
+  ({
+    category,
+    theme,
+    router,
+    isLast,
+  }: {
+    category: Category;
+    theme: any;
+    router: any;
+    isLast: boolean;
+  }) => (
+    <List.Item
+      title={category.name}
+      style={{
+        minHeight: 76,
+        justifyContent: "center",
+        borderBottomWidth: isLast ? 0 : 1,
+        borderBottomColor: theme.colors.surfaceVariant,
+      }}
+      left={(props) => <List.Icon {...props} icon={category.icon} />}
+      right={(props) => (
+        <IconButton
+          {...props}
+          icon="delete"
+          onPress={async () => {
+            try {
+              await database.write(async () => {
+                await category.markAsDeleted();
+              });
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+      )}
+      onPress={() => {
+        router.push(`/(models)/(category)/${category.id}`);
+      }}
+    />
+  ),
+);
+
 function ManageCategoriesScreen({ categories }: { categories: Category[] }) {
   const theme = useTheme();
   const router = useRouter();
@@ -79,35 +127,12 @@ function ManageCategoriesScreen({ categories }: { categories: Category[] }) {
             style={{ backgroundColor: theme.colors.elevation.level1 }}
           >
             {filteredCategories.map((category, index) => (
-              <List.Item
+              <CategoryListItem
                 key={category.id}
-                title={category.name}
-                style={{
-                  minHeight: 76,
-                  justifyContent: "center",
-                  borderBottomWidth:
-                    index === filteredCategories.length - 1 ? 0 : 1,
-                  borderBottomColor: theme.colors.surfaceVariant,
-                }}
-                left={(props) => <List.Icon {...props} icon={category.icon} />}
-                right={(props) => (
-                  <IconButton
-                    {...props}
-                    icon="delete"
-                    onPress={async () => {
-                      try {
-                        await database.write(async () => {
-                          await category.markAsDeleted();
-                        });
-                      } catch (e) {
-                        console.error(e);
-                      }
-                    }}
-                  />
-                )}
-                onPress={() => {
-                  router.push(`/(models)/(category)/${category.id}`);
-                }}
+                category={category}
+                theme={theme}
+                router={router}
+                isLast={index === filteredCategories.length - 1}
               />
             ))}
             {filteredCategories.length === 0 && (
