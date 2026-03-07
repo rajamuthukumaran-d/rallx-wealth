@@ -100,10 +100,9 @@ export default function SettingsScreen() {
             <List.Item
               style={{ minHeight: 76, justifyContent: "center" }}
               title="Backup & Restore"
-              // description="Export/Import SQLite Database"
               left={(props) => <List.Icon {...props} icon="database-export" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => {}}
+              onPress={() => router.push("/(models)/(backup-restore)")}
             />
             <Divider />
             <List.Item
