@@ -98,13 +98,6 @@ export const importDatabase = async () => {
             try {
               const text = await pickedFile.text();
 
-              // Guard: old binary format starts with "RALLXDB1".
-              if (text.startsWith("RALLXDB1")) {
-                throw new Error(
-                  "This backup was created with an older version of the app. Please export a fresh backup first.",
-                );
-              }
-
               let backup: any;
               try {
                 backup = JSON.parse(text);
