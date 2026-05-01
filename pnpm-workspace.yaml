@@ -1,1 +1,4 @@
 nodeLinker: hoisted
+
+patchedDependencies:
+  react-native-zip-archive@7.1.0: patches/react-native-zip-archive@7.1.0.patch
