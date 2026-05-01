@@ -103,7 +103,7 @@ export default function SettingsScreen() {
               // description="Export/Import SQLite Database"
               left={(props) => <List.Icon {...props} icon="database-export" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => {}}
+              onPress={() => router.push("/(models)/(backup-restore)")}
             />
             <Divider />
             <List.Item
