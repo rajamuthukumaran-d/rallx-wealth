@@ -92,7 +92,7 @@ export default function SettingsScreen() {
               // description="Export/Import SQLite Database"
               left={(props) => <List.Icon {...props} icon="database-export" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => router.push("/(models)/(backup-restore)")}
+              onPress={() => router.push("/(screens)/(backup-restore)")}
             />
             <Divider />
             <List.Item
@@ -100,7 +100,7 @@ export default function SettingsScreen() {
               title="Manage Categories"
               left={(props) => <List.Icon {...props} icon="shape" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => router.push("/(models)/(category)")}
+              onPress={() => router.push("/(screens)/(category)")}
             />
             <Divider />
             <List.Item

@@ -55,7 +55,7 @@ const CategoryListItem = withObservables(
         />
       )}
       onPress={() => {
-        router.push(`/(models)/(category)/${category.id}`);
+        router.push(`/(screens)/(category)/${category.id}`);
       }}
     />
   ),
@@ -143,7 +143,7 @@ function ManageCategoriesScreen({ categories }: { categories: Category[] }) {
           icon="plus"
           className="absolute right-4 bottom-8"
           onPress={() => {
-            router.push("/(models)/(category)/new");
+            router.push("/(screens)/(category)/new");
           }}
         />
       </View>

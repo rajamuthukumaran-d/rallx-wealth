@@ -124,7 +124,7 @@ export default function NetWorthScreen() {
           pct={assetsPct}
           subtitle={getUniqueTypes(assets)}
           palette={assetPalette}
-          onPress={() => router.push("/(models)/(net-worth)/(assets)")}
+          onPress={() => router.push("/(screens)/(net-worth)/(assets)")}
         />
         <BreakdownCard
           label="Investments"
