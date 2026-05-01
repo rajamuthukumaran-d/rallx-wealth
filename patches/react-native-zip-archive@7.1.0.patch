@@ -1,0 +1,13 @@
+diff --git a/android/src/main/java/com/rnziparchive/RNZipArchiveModule.java b/android/src/main/java/com/rnziparchive/RNZipArchiveModule.java
+index 14bd68fd8c07db33641383ce2f9d0cf9c5ec8f4c..cccbd9975daf5aa77932d92ed35bf3c579a0dd2b 100644
+--- a/android/src/main/java/com/rnziparchive/RNZipArchiveModule.java
++++ b/android/src/main/java/com/rnziparchive/RNZipArchiveModule.java
+@@ -470,7 +470,7 @@ public class RNZipArchiveModule extends ReactContextBaseJavaModule {
+   }
+ 
+   private static CompressionLevel getCompressionLevel(double compressionLevel) {
+-    switch (compressionLevel) {
++    switch ((int) compressionLevel) {
+       case -1:
+         return CompressionLevel.NORMAL;
+       case 0:
