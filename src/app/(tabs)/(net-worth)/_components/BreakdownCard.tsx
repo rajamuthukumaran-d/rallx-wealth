@@ -29,6 +29,7 @@ interface BreakdownCardProps {
   subtitle: string;
   palette: CardPalette;
   isDebt?: boolean;
+  onPress?: () => void;
 }
 
 export function BreakdownCard({
@@ -40,12 +41,14 @@ export function BreakdownCard({
   subtitle,
   palette,
   isDebt,
+  onPress,
 }: BreakdownCardProps) {
   const displayAmount = isDebt ? -amount : amount;
 
   return (
     <TouchableOpacity
       activeOpacity={0.88}
+      onPress={onPress}
       className="rounded-3xl p-5 mb-3 overflow-hidden"
       style={{ backgroundColor: palette.bg }}
     >

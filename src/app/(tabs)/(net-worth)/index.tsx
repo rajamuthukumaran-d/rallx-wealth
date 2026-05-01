@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { PieChart } from "react-native-gifted-charts";
 import { ScrollView, useColorScheme, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
@@ -123,6 +124,7 @@ export default function NetWorthScreen() {
           pct={assetsPct}
           subtitle={getUniqueTypes(assets)}
           palette={assetPalette}
+          onPress={() => router.push("/(models)/(net-worth)/(assets)")}
         />
         <BreakdownCard
           label="Investments"

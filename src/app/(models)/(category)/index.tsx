@@ -3,13 +3,13 @@ import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import {
-  Appbar,
   FAB,
   IconButton,
   List,
   SegmentedButtons,
   useTheme,
 } from "react-native-paper";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { database } from "../../../data";
 import Category from "../../../data/models/Category";
 
@@ -75,12 +75,7 @@ function ManageCategoriesScreen({ categories }: { categories: Category[] }) {
       <Stack.Screen
         options={{
           headerShown: true,
-          header: () => (
-            <Appbar.Header elevated>
-              <Appbar.BackAction onPress={() => router.back()} />
-              <Appbar.Content title="Manage Categories" />
-            </Appbar.Header>
-          ),
+          header: () => <ScreenHeader title="Manage Categories" />,
         }}
       />
       <View
