@@ -5,12 +5,12 @@ import {
   Avatar,
   Button,
   Divider,
-  IconButton,
   List,
   Switch,
   Text,
   useTheme,
 } from "react-native-paper";
+import { PageHeader } from "@/components/PageHeader";
 
 export default function SettingsScreen() {
   const router = useExpoRouter();
@@ -26,18 +26,7 @@ export default function SettingsScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View className="px-4 pt-2 pb-8 mt-8">
-        <View className="h-16 flex-row items-center justify-between">
-          <Text
-            className="text-4xl font-medium"
-            style={{ color: theme.colors.onSurface }}
-          >
-            Settings
-          </Text>
-
-          <View className="flex-row items-center justify-center">
-            <IconButton icon="bell" size={24} onPress={() => {}} />
-          </View>
-        </View>
+        <PageHeader title="Settings" />
 
         <View className="items-center justify-center py-6">
           <Avatar.Icon size={96} icon="account" />

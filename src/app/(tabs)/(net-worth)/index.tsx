@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { PieChart } from "react-native-gifted-charts";
 import { ScrollView, useColorScheme, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
+import { PageHeader } from "@/components/PageHeader";
 import { useAssets } from "@/data/controllers/useAssets";
 import { useDebts } from "@/data/controllers/useDebts";
 import { useInvestments } from "@/data/controllers/useInvestments";
@@ -47,11 +48,7 @@ export default function NetWorthScreen() {
     >
       <View className="px-4 pt-2 pb-4 mt-8">
         {/* ── Header ── */}
-        <View className="h-16 flex-row items-center">
-          <Text className="text-4xl font-medium" style={{ color: theme.colors.onSurface }}>
-            Net Worth
-          </Text>
-        </View>
+        <PageHeader title="Net Worth" />
 
         {/* ── Donut chart card ── */}
         <View
