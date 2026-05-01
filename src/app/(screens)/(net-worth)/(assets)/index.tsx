@@ -3,7 +3,7 @@ import { useAssets } from "@/data/controllers/useAssets";
 import Asset from "@/data/models/Asset";
 import { formatCurrency, formatFullCurrency } from "@/utils/currency";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { FAB, Text, useTheme } from "react-native-paper";
 
@@ -76,6 +76,7 @@ function groupByType(assets: Asset[]): [string, Asset[]][] {
 
 export default function AssetsBreakdownScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const { assets, totalBalance, isLoading } = useAssets(false);
   const groups = groupByType(assets);
 
@@ -245,9 +246,7 @@ export default function AssetsBreakdownScreen() {
           icon="plus"
           label="Add New Asset"
           className="absolute right-4 bottom-8"
-          onPress={() => {
-            // TODO: navigate to add asset screen
-          }}
+          onPress={() => router.push("/(screens)/(net-worth)/(assets)/add")}
         />
       </View>
     </>
