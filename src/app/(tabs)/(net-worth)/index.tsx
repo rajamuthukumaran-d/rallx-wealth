@@ -144,6 +144,7 @@ export default function NetWorthScreen() {
           subtitle={getUniqueTypes(debts)}
           palette={debtPalette}
           isDebt
+          onPress={() => router.push("/(screens)/(net-worth)/(debts)")}
         />
 
         {/* ── Recent updates ── */}
