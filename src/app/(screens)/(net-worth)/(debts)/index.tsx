@@ -4,7 +4,7 @@ import Debt from "@/data/models/Debt";
 import { formatCurrency, formatFullCurrency } from "@/utils/currency";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import { ScrollView, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { FAB, Text, useTheme } from "react-native-paper";
 
 type TypeConfig = { icon: string; label: string; bgColor: string; iconColor: string };
@@ -198,8 +198,15 @@ export default function DebtsBreakdownScreen() {
                   {typeDebts.map((debt, dIdx) => {
                     const meta = getMetaItems(debt);
                     return (
-                      <View
+                      <TouchableOpacity
                         key={debt.id}
+                        activeOpacity={0.7}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/(screens)/(net-worth)/(debts)/[id]",
+                            params: { id: debt.id },
+                          })
+                        }
                         className="py-4"
                         style={{
                           borderTopWidth: dIdx > 0 ? 1 : 0,
@@ -244,7 +251,7 @@ export default function DebtsBreakdownScreen() {
                             </View>
                           ))}
                         </View>
-                      </View>
+                      </TouchableOpacity>
                     );
                   })}
                 </View>

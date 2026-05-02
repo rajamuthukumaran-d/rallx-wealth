@@ -22,7 +22,18 @@ export function useDebts(statusFilter: "active" | "all" = "active"): DebtsData {
     const subscription = database
       .get<Debt>("debts")
       .query(...clauses)
-      .observe()
+      .observeWithColumns([
+        "name",
+        "type",
+        "status",
+        "total_amount",
+        "remaining_amount",
+        "emi_amount",
+        "interest_rate",
+        "due_date",
+        "auto_debit",
+        "updated_at",
+      ])
       .subscribe((data) => {
         setDebts(data);
         setIsLoading(false);
