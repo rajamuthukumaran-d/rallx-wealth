@@ -4,7 +4,7 @@ import Asset from "@/data/models/Asset";
 import { formatCurrency, formatFullCurrency } from "@/utils/currency";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import { ScrollView, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { FAB, Text, useTheme } from "react-native-paper";
 
 type TypeConfig = { icon: string; bgColor: string; iconColor: string };
@@ -186,13 +186,19 @@ export default function AssetsBreakdownScreen() {
 
                   {/* Individual asset rows */}
                   {typeAssets.map((asset, aIdx) => (
-                    <View
+                    <TouchableOpacity
                       key={asset.id}
                       className="flex-row justify-between items-center py-2.5"
                       style={{
                         borderTopWidth: aIdx > 0 ? 1 : 0,
                         borderTopColor: "rgba(255,255,255,0.05)",
                       }}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(screens)/(net-worth)/(assets)/[id]",
+                          params: { id: asset.id },
+                        })
+                      }
                     >
                       <View className="flex-1 mr-4">
                         <Text
@@ -216,7 +222,7 @@ export default function AssetsBreakdownScreen() {
                       >
                         {formatCurrency(asset.balance)}
                       </Text>
-                    </View>
+                    </TouchableOpacity>
                   ))}
                 </View>
               );
@@ -246,7 +252,12 @@ export default function AssetsBreakdownScreen() {
           icon="plus"
           label="Add New Asset"
           className="absolute right-4 bottom-8"
-          onPress={() => router.push("/(screens)/(net-worth)/(assets)/add")}
+          onPress={() =>
+            router.push({
+              pathname: "/(screens)/(net-worth)/(assets)/[id]",
+              params: { id: "new" },
+            })
+          }
         />
       </View>
     </>

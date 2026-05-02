@@ -20,7 +20,16 @@ export function useAssets(onlyIncludedInBal = true): AssetsData {
     const subscription = database
       .get<Asset>("assets")
       .query(...clauses)
-      .observe()
+      .observeWithColumns([
+        "name",
+        "type",
+        "balance",
+        "min_balance",
+        "include_in_bal",
+        "interest_rate",
+        "maturity_date",
+        "updated_at",
+      ])
       .subscribe((data) => {
         setAssets(data);
         setIsLoading(false);
