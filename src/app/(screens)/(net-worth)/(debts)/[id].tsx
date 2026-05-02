@@ -1,6 +1,11 @@
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { database } from "@/data";
-import Debt from "@/data/models/Debt";
+import { useAssets } from "@/data/controllers/useAssets";
+import {
+  createDebt,
+  deleteDebt,
+  updateDebt,
+  useDebt,
+} from "@/data/controllers/useDebts";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -13,6 +18,7 @@ import {
   Dialog,
   Menu,
   Portal,
+  SegmentedButtons,
   Switch,
   Text,
   TextInput,
@@ -27,74 +33,65 @@ const DEBT_TYPES = [
   { label: "Other", value: "other" },
 ];
 
-const DEBT_STATUSES = [
-  { label: "Active", value: "active" },
-  { label: "Paid", value: "paid" },
-  { label: "Settled", value: "settled" },
-];
-
 export default function DebtFormScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const isAdding = id === "new";
+  const { assets } = useAssets(false);
 
-  const debtRef = useRef<Debt | null>(null);
+  const { debt } = useDebt(isAdding ? "" : id);
   const formPopulated = useRef(false);
 
   const [name, setName] = useState("");
   const [debtType, setDebtType] = useState("");
   const [typeMenuVisible, setTypeMenuVisible] = useState(false);
-  const [status, setStatus] = useState("active");
-  const [statusMenuVisible, setStatusMenuVisible] = useState(false);
+  const [status, setStatus] = useState<"active" | "closed">("active");
   const [totalAmount, setTotalAmount] = useState("");
   const [remainingAmount, setRemainingAmount] = useState("");
   const [emiAmount, setEmiAmount] = useState("");
   const [interestRate, setInterestRate] = useState("");
+  const [rewardPoints, setRewardPoints] = useState("");
+  const [roundOff, setRoundOff] = useState(false);
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [autoDebit, setAutoDebit] = useState(false);
+  const [sourceAssetId, setSourceAssetId] = useState<string | null>(null);
+  const [sourceAssetMenuVisible, setSourceAssetMenuVisible] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (isAdding) return;
-
-    const subscription = database
-      .get<Debt>("debts")
-      .findAndObserve(id)
-      .subscribe({
-        next: (debt) => {
-          debtRef.current = debt;
-          if (!formPopulated.current) {
-            formPopulated.current = true;
-            setName(debt.name);
-            setDebtType(debt.type);
-            setStatus(debt.status);
-            setTotalAmount(debt.totalAmount ? String(debt.totalAmount) : "");
-            setRemainingAmount(
-              debt.remainingAmount ? String(debt.remainingAmount) : ""
-            );
-            setEmiAmount(debt.emiAmount ? String(debt.emiAmount) : "");
-            setInterestRate(
-              debt.interestRate != null ? String(debt.interestRate) : ""
-            );
-            if (debt.dueDate) setDueDate(new Date(debt.dueDate));
-            setAutoDebit(debt.autoDebit);
-          }
-        },
-        error: console.error,
-      });
-
-    return () => subscription.unsubscribe();
-  }, [id, isAdding]);
+    if (!debt || formPopulated.current) return;
+    formPopulated.current = true;
+    setName(debt.name);
+    setDebtType(debt.type);
+    setStatus(debt.status === "active" ? "active" : "closed");
+    setTotalAmount(debt.totalAmount ? String(debt.totalAmount) : "");
+    setRemainingAmount(
+      debt.remainingAmount ? String(debt.remainingAmount) : "",
+    );
+    setEmiAmount(debt.emiAmount ? String(debt.emiAmount) : "");
+    setInterestRate(
+      debt.interestRate != null ? String(debt.interestRate) : "",
+    );
+    setRewardPoints(
+      debt.defaultRewardPoints != null
+        ? String(debt.defaultRewardPoints)
+        : "",
+    );
+    setRoundOff((debt.roundOffAmount ?? 0) > 0);
+    if (debt.dueDate) setDueDate(new Date(debt.dueDate));
+    setAutoDebit(debt.autoDebit);
+    setSourceAssetId((debt._raw as any).asset_id || null);
+  }, [debt]);
 
   const selectedTypeLabel =
     DEBT_TYPES.find((t) => t.value === debtType)?.label ?? "";
 
-  const selectedStatusLabel =
-    DEBT_STATUSES.find((s) => s.value === status)?.label ?? "";
+  const selectedSourceAssetLabel =
+    assets.find((a) => a.id === sourceAssetId)?.name ?? "";
 
   const onDateChange = (_: DateTimePickerEvent, date?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
@@ -108,41 +105,29 @@ export default function DebtFormScreen() {
       day: "numeric",
     });
 
+  const formData = () => ({
+    name: name.trim(),
+    type: debtType,
+    status,
+    totalAmount: parseFloat(totalAmount) || 0,
+    remainingAmount: parseFloat(remainingAmount) || 0,
+    autoDebit,
+    emiAmount: emiAmount ? parseFloat(emiAmount) : undefined,
+    interestRate: interestRate ? parseFloat(interestRate) : undefined,
+    defaultRewardPoints: rewardPoints ? parseFloat(rewardPoints) : undefined,
+    roundOffAmount: roundOff ? 1 : undefined,
+    dueDate: dueDate ? dueDate.getTime() : undefined,
+  });
+
   const handleSave = async () => {
     if (!name.trim() || !debtType) return;
     setSaving(true);
     try {
-      await database.write(async () => {
-        if (isAdding) {
-          await database.get<Debt>("debts").create((record) => {
-            record.name = name.trim();
-            record.type = debtType;
-            record.status = status;
-            record.totalAmount = parseFloat(totalAmount) || 0;
-            record.remainingAmount = parseFloat(remainingAmount) || 0;
-            record.autoDebit = autoDebit;
-            record.isDeleted = false;
-            if (emiAmount) record.emiAmount = parseFloat(emiAmount);
-            if (interestRate) record.interestRate = parseFloat(interestRate);
-            if (dueDate) record.dueDate = dueDate.getTime() as any;
-          });
-        } else {
-          const debt = await database.get<Debt>("debts").find(id);
-          await debt.update((record) => {
-            record.name = name.trim();
-            record.type = debtType;
-            record.status = status;
-            record.totalAmount = parseFloat(totalAmount) || 0;
-            record.remainingAmount = parseFloat(remainingAmount) || 0;
-            record.autoDebit = autoDebit;
-            record.emiAmount = emiAmount ? parseFloat(emiAmount) : undefined;
-            record.interestRate = interestRate
-              ? parseFloat(interestRate)
-              : undefined;
-            record.dueDate = dueDate ? (dueDate.getTime() as any) : undefined;
-          });
-        }
-      });
+      if (isAdding) {
+        await createDebt(formData());
+      } else {
+        await updateDebt(id, formData());
+      }
       router.back();
     } catch (e) {
       console.error(e);
@@ -152,14 +137,10 @@ export default function DebtFormScreen() {
   };
 
   const handleDelete = async () => {
-    if (!debtRef.current) return;
+    if (!debt) return;
     setDeleting(true);
     try {
-      await database.write(async () => {
-        await debtRef.current!.update((record) => {
-          record.isDeleted = true;
-        });
-      });
+      await deleteDebt(debt);
       router.back();
     } catch (e) {
       console.error(e);
@@ -338,8 +319,17 @@ export default function DebtFormScreen() {
                 value={dueDate ? formatDate(dueDate) : ""}
                 mode="outlined"
                 editable={false}
-                pointerEvents="none"
-                right={<TextInput.Icon icon="calendar" />}
+                pointerEvents="box-none"
+                right={
+                  dueDate ? (
+                    <TextInput.Icon
+                      icon="close"
+                      onPress={() => setDueDate(null)}
+                    />
+                  ) : (
+                    <TextInput.Icon icon="calendar" />
+                  )
+                }
                 style={inputStyle}
               />
             </TouchableOpacity>
@@ -354,43 +344,23 @@ export default function DebtFormScreen() {
             )}
           </View>
 
-          {/* Status & options */}
-          <View className="rounded-3xl p-4 gap-3" style={sectionBg}>
+          {/* Rewards */}
+          <View className="rounded-3xl p-4 gap-3 mb-4" style={sectionBg}>
             <Text
               className="text-xs font-medium tracking-widest uppercase mb-1"
               style={{ color: theme.colors.onSurfaceVariant }}
             >
-              Options
+              Rewards
             </Text>
 
-            <Menu
-              visible={statusMenuVisible}
-              onDismiss={() => setStatusMenuVisible(false)}
-              anchor={
-                <TouchableOpacity onPress={() => setStatusMenuVisible(true)}>
-                  <TextInput
-                    label="Status"
-                    value={selectedStatusLabel}
-                    mode="outlined"
-                    editable={false}
-                    pointerEvents="none"
-                    right={<TextInput.Icon icon="chevron-down" />}
-                    style={inputStyle}
-                  />
-                </TouchableOpacity>
-              }
-            >
-              {DEBT_STATUSES.map((s) => (
-                <Menu.Item
-                  key={s.value}
-                  title={s.label}
-                  onPress={() => {
-                    setStatus(s.value);
-                    setStatusMenuVisible(false);
-                  }}
-                />
-              ))}
-            </Menu>
+            <TextInput
+              label="Reward Points"
+              value={rewardPoints}
+              onChangeText={setRewardPoints}
+              mode="outlined"
+              keyboardType="decimal-pad"
+              style={inputStyle}
+            />
 
             <View
               className="flex-row items-center justify-between rounded-2xl p-4"
@@ -401,16 +371,104 @@ export default function DebtFormScreen() {
                   className="text-sm font-medium"
                   style={{ color: theme.colors.onSurface }}
                 >
-                  Auto-Debit
+                  Round Off
                 </Text>
                 <Text
                   className="text-xs mt-0.5"
                   style={{ color: theme.colors.onSurfaceVariant }}
                 >
-                  Payment is automatically deducted
+                  Round payment to the nearest whole number
                 </Text>
               </View>
-              <Switch value={autoDebit} onValueChange={setAutoDebit} />
+              <Switch value={roundOff} onValueChange={setRoundOff} />
+            </View>
+          </View>
+
+          {/* Status & options */}
+          <View className="rounded-3xl p-4 gap-3" style={sectionBg}>
+            <Text
+              className="text-xs font-medium tracking-widest uppercase mb-1"
+              style={{ color: theme.colors.onSurfaceVariant }}
+            >
+              Options
+            </Text>
+
+            <SegmentedButtons
+              value={status}
+              onValueChange={(v) => setStatus(v as "active" | "closed")}
+              buttons={[
+                {
+                  value: "active",
+                  label: "Active",
+                  icon: "check-circle-outline",
+                },
+                {
+                  value: "closed",
+                  label: "Closed",
+                  icon: "close-circle-outline",
+                  checkedColor: "#ffffff",
+                  style:
+                    status === "closed"
+                      ? { backgroundColor: "#2e7d32" }
+                      : undefined,
+                },
+              ]}
+            />
+
+            <View style={{ opacity: 0.45 }}>
+              <View
+                className="flex-row items-center justify-between rounded-2xl p-4 mb-3"
+                style={{ backgroundColor: theme.colors.elevation.level3 }}
+              >
+                <View className="flex-1 mr-4">
+                  <Text
+                    className="text-sm font-medium"
+                    style={{ color: theme.colors.onSurface }}
+                  >
+                    Auto-Debit
+                  </Text>
+                  <Text
+                    className="text-xs mt-0.5"
+                    style={{ color: theme.colors.onSurfaceVariant }}
+                  >
+                    Payment is automatically deducted
+                  </Text>
+                </View>
+                <Switch
+                  value={autoDebit}
+                  onValueChange={setAutoDebit}
+                  disabled
+                />
+              </View>
+
+              <Menu
+                visible={sourceAssetMenuVisible}
+                onDismiss={() => setSourceAssetMenuVisible(false)}
+                anchor={
+                  <TouchableOpacity disabled>
+                    <TextInput
+                      label="Source Account"
+                      value={selectedSourceAssetLabel}
+                      mode="outlined"
+                      editable={false}
+                      pointerEvents="none"
+                      right={<TextInput.Icon icon="chevron-down" />}
+                      style={inputStyle}
+                    />
+                  </TouchableOpacity>
+                }
+              >
+                {assets.map((a) => (
+                  <Menu.Item
+                    key={a.id}
+                    title={a.name}
+                    onPress={() => {
+                      setSourceAssetId(a.id);
+                      setSourceAssetMenuVisible(false);
+                    }}
+                  />
+                ))}
+              </Menu>
             </View>
           </View>
 
@@ -418,7 +476,13 @@ export default function DebtFormScreen() {
             mode="contained"
             onPress={handleSave}
             loading={saving}
-            disabled={saving || !name.trim() || !debtType || !totalAmount || !remainingAmount}
+            disabled={
+              saving ||
+              !name.trim() ||
+              !debtType ||
+              !totalAmount ||
+              !remainingAmount
+            }
             className="rounded-full mt-6 py-1"
             icon="content-save"
           >
