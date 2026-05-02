@@ -4,8 +4,9 @@ import Debt from "@/data/models/Debt";
 import { formatCurrency, formatFullCurrency } from "@/utils/currency";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
+import { useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
-import { FAB, Text, useTheme } from "react-native-paper";
+import { Appbar, FAB, Text, useTheme } from "react-native-paper";
 
 type TypeConfig = { icon: string; label: string; bgColor: string; iconColor: string };
 
@@ -107,7 +108,8 @@ function getMetaItems(debt: Debt): [MetaItem, MetaItem, MetaItem, MetaItem] {
 export default function DebtsBreakdownScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const { debts, totalRemaining, isLoading } = useDebts();
+  const [showClosed, setShowClosed] = useState(false);
+  const { debts, totalRemaining, isLoading } = useDebts(showClosed ? "all" : "active");
   const groups = groupByType(debts);
 
   return (
@@ -115,7 +117,19 @@ export default function DebtsBreakdownScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          header: () => <ScreenHeader title="Debts" isTransparent />,
+          header: () => (
+            <ScreenHeader
+              title="Debts"
+              isTransparent
+              rightActions={
+                <Appbar.Action
+                  icon={showClosed ? "filter" : "filter-outline"}
+                  onPress={() => setShowClosed((v) => !v)}
+                  iconColor={showClosed ? theme.colors.primary : undefined}
+                />
+              }
+            />
+          ),
         }}
       />
       <View className="flex-1" style={{ backgroundColor: theme.colors.background }}>
@@ -214,12 +228,27 @@ export default function DebtsBreakdownScreen() {
                         }}
                       >
                         <View className="flex-row justify-between items-center mb-2">
-                          <Text
-                            className="text-base"
-                            style={{ color: theme.colors.onSurface }}
-                          >
-                            {debt.name}
-                          </Text>
+                          <View className="flex-row items-center gap-2 flex-1 mr-2">
+                            <Text
+                              className="text-base"
+                              style={{ color: theme.colors.onSurface }}
+                            >
+                              {debt.name}
+                            </Text>
+                            {debt.status === "closed" && (
+                              <View
+                                className="px-2 py-0.5 rounded-full"
+                                style={{ backgroundColor: theme.colors.surfaceVariant }}
+                              >
+                                <Text
+                                  className="text-[10px] font-medium uppercase tracking-wider"
+                                  style={{ color: theme.colors.onSurfaceVariant }}
+                                >
+                                  Closed
+                                </Text>
+                              </View>
+                            )}
+                          </View>
                           <Text
                             className="text-base font-medium"
                             style={{ color: theme.colors.error }}

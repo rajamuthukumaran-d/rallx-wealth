@@ -291,7 +291,16 @@ export default function AssetFormScreen() {
                     mode="outlined"
                     editable={false}
                     pointerEvents="none"
-                    right={<TextInput.Icon icon="calendar" />}
+                    right={
+                      maturityDate ? (
+                        <TextInput.Icon
+                          icon="close"
+                          onPress={() => setMaturityDate(null)}
+                        />
+                      ) : (
+                        <TextInput.Icon icon="calendar" />
+                      )
+                    }
                     style={inputStyle}
                   />
                 </TouchableOpacity>
