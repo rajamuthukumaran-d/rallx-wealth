@@ -70,7 +70,8 @@ export default function AssetFormScreen() {
             setBalance(asset.balance ? String(asset.balance) : "");
             setMinBalance(asset.minBalance ? String(asset.minBalance) : "");
             setIncludeInBal(asset.includeInBal);
-            if (asset.maturityDate) setMaturityDate(new Date(asset.maturityDate));
+            if (asset.maturityDate)
+              setMaturityDate(new Date(asset.maturityDate));
             if (asset.interestRate) setInterestRate(String(asset.interestRate));
           }
         },
@@ -108,8 +109,7 @@ export default function AssetFormScreen() {
             record.minBalance = parseFloat(minBalance) || 0;
             record.includeInBal = includeInBal;
             record.isDeleted = false;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (maturityDate) record.maturityDate = maturityDate.getTime() as any;
+            if (maturityDate) record.maturityDate = maturityDate.getTime();
             if (interestRate) record.interestRate = parseFloat(interestRate);
           });
         } else {
@@ -121,10 +121,12 @@ export default function AssetFormScreen() {
             record.balance = parseFloat(balance) || 0;
             record.minBalance = parseFloat(minBalance) || 0;
             record.includeInBal = includeInBal;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            record.maturityDate = maturityDate ? (maturityDate.getTime() as any) : (null as any);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            record.interestRate = interestRate ? parseFloat(interestRate) : (null as any);
+            record.maturityDate = maturityDate
+              ? (maturityDate.getTime() as any)
+              : undefined;
+            record.interestRate = interestRate
+              ? parseFloat(interestRate)
+              : undefined;
           });
         }
       });

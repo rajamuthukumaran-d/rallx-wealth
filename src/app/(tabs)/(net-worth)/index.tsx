@@ -10,8 +10,8 @@ import { useInvestments } from "@/data/controllers/useInvestments";
 import { useNetWorth } from "@/data/controllers/useNetWorth";
 import { formatCurrency } from "@/utils/currency";
 import { getUniqueTypes } from "@/utils/string";
-import { BreakdownCard, CARD_COLORS } from "./_components/BreakdownCard";
-import { RecentUpdateRow } from "./_components/RecentUpdateRow";
+import { BreakdownCard, CARD_COLORS } from "@/components/NetWorth/BreakdownCard";
+import { RecentUpdateRow } from "@/components/NetWorth/RecentUpdateRow";
 
 export default function NetWorthScreen() {
   const theme = useTheme();

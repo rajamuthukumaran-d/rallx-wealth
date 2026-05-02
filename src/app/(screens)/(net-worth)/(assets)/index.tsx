@@ -250,8 +250,13 @@ export default function AssetsBreakdownScreen() {
 
         <FAB
           icon="plus"
-          label="Add New Asset"
-          className="absolute right-4 bottom-8"
+          style={{
+            position: "absolute",
+            right: 16,
+            bottom: 32,
+            backgroundColor: theme.colors.primary,
+          }}
+          color={theme.colors.onPrimary}
           onPress={() =>
             router.push({
               pathname: "/(screens)/(net-worth)/(assets)/[id]",
