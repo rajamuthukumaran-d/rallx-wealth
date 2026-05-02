@@ -1,6 +1,11 @@
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { database } from "@/data";
-import Asset from "@/data/models/Asset";
+import {
+  AssetFormData,
+  createAsset,
+  deleteAsset,
+  updateAsset,
+  useAsset,
+} from "@/data/controllers/useAssets";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -34,8 +39,7 @@ export default function AssetFormScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const isAdding = id === "new";
 
-  // Live reference updated by findAndObserve so handleSave always gets latest model
-  const assetRef = useRef<Asset | null>(null);
+  const { asset } = useAsset(isAdding ? "" : id);
   const formPopulated = useRef(false);
 
   const [name, setName] = useState("");
@@ -52,34 +56,16 @@ export default function AssetFormScreen() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (isAdding) return;
-
-    const subscription = database
-      .get<Asset>("assets")
-      .findAndObserve(id)
-      .subscribe({
-        next: (asset) => {
-          // Keep the ref live so updates always go to the latest model
-          assetRef.current = asset;
-
-          // Populate form only once on first emission
-          if (!formPopulated.current) {
-            formPopulated.current = true;
-            setName(asset.name);
-            setAssetType(asset.type);
-            setBalance(asset.balance ? String(asset.balance) : "");
-            setMinBalance(asset.minBalance ? String(asset.minBalance) : "");
-            setIncludeInBal(asset.includeInBal);
-            if (asset.maturityDate)
-              setMaturityDate(new Date(asset.maturityDate));
-            if (asset.interestRate) setInterestRate(String(asset.interestRate));
-          }
-        },
-        error: console.error,
-      });
-
-    return () => subscription.unsubscribe();
-  }, [id, isAdding]);
+    if (!asset || formPopulated.current) return;
+    formPopulated.current = true;
+    setName(asset.name);
+    setAssetType(asset.type);
+    setBalance(asset.balance ? String(asset.balance) : "");
+    setMinBalance(asset.minBalance ? String(asset.minBalance) : "");
+    setIncludeInBal(asset.includeInBal);
+    if (asset.maturityDate) setMaturityDate(new Date(asset.maturityDate));
+    if (asset.interestRate) setInterestRate(String(asset.interestRate));
+  }, [asset]);
 
   const selectedTypeLabel =
     ASSET_TYPES.find((t) => t.value === assetType)?.label ?? "";
@@ -96,40 +82,25 @@ export default function AssetFormScreen() {
       day: "numeric",
     });
 
+  const formData = (): AssetFormData => ({
+    name: name.trim(),
+    type: assetType,
+    balance: parseFloat(balance) || 0,
+    minBalance: parseFloat(minBalance) || 0,
+    includeInBal,
+    maturityDate: maturityDate ? maturityDate.getTime() : undefined,
+    interestRate: interestRate ? parseFloat(interestRate) : undefined,
+  });
+
   const handleSave = async () => {
     if (!name.trim() || !assetType) return;
     setSaving(true);
     try {
-      await database.write(async () => {
-        if (isAdding) {
-          await database.get<Asset>("assets").create((record) => {
-            record.name = name.trim();
-            record.type = assetType;
-            record.balance = parseFloat(balance) || 0;
-            record.minBalance = parseFloat(minBalance) || 0;
-            record.includeInBal = includeInBal;
-            record.isDeleted = false;
-            if (maturityDate) record.maturityDate = maturityDate.getTime();
-            if (interestRate) record.interestRate = parseFloat(interestRate);
-          });
-        } else {
-          // Re-fetch inside the write batch to guarantee the latest model version
-          const asset = await database.get<Asset>("assets").find(id);
-          await asset.update((record) => {
-            record.name = name.trim();
-            record.type = assetType;
-            record.balance = parseFloat(balance) || 0;
-            record.minBalance = parseFloat(minBalance) || 0;
-            record.includeInBal = includeInBal;
-            record.maturityDate = maturityDate
-              ? (maturityDate.getTime() as any)
-              : undefined;
-            record.interestRate = interestRate
-              ? parseFloat(interestRate)
-              : undefined;
-          });
-        }
-      });
+      if (isAdding) {
+        await createAsset(formData());
+      } else {
+        await updateAsset(id, formData());
+      }
       router.back();
     } catch (e) {
       console.error(e);
@@ -139,14 +110,10 @@ export default function AssetFormScreen() {
   };
 
   const handleDelete = async () => {
-    if (!assetRef.current) return;
+    if (!asset) return;
     setDeleting(true);
     try {
-      await database.write(async () => {
-        await assetRef.current!.update((record) => {
-          record.isDeleted = true;
-        });
-      });
+      await deleteAsset(asset);
       router.back();
     } catch (e) {
       console.error(e);

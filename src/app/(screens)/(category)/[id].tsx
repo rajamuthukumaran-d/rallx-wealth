@@ -1,4 +1,9 @@
-import { withObservables } from "@nozbe/watermelondb/react";
+import {
+  createCategory,
+  deleteCategory,
+  updateCategory,
+  useCategory,
+} from "@/data/controllers/useCategories";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Linking, ScrollView, View } from "react-native";
@@ -11,16 +16,16 @@ import {
   TextInput,
   useTheme,
 } from "react-native-paper";
-import { database } from "../../../data";
-import Category from "../../../data/models/Category";
 
-function CategoryEditScreen({ category }: { category?: Category }) {
+export default function CategoryEditScreen() {
   const params = useLocalSearchParams();
   const theme = useTheme();
   const router = useRouter();
 
   const id = params.id as string;
   const isEditing = id !== "new";
+
+  const { category } = useCategory(isEditing ? id : "");
 
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("shape");
@@ -38,22 +43,11 @@ function CategoryEditScreen({ category }: { category?: Category }) {
     if (!name.trim()) return;
 
     try {
-      await database.write(async () => {
-        if (isEditing && category) {
-          await category.update((record) => {
-            record.name = name;
-            record.icon = icon;
-            record.type = type;
-          });
-        } else {
-          const categoriesCollection = database.get<Category>("categories");
-          await categoriesCollection.create((record) => {
-            record.name = name;
-            record.icon = icon;
-            record.type = type;
-          });
-        }
-      });
+      if (isEditing && category) {
+        await updateCategory(category, { name, icon, type });
+      } else {
+        await createCategory({ name, icon, type });
+      }
       router.back();
     } catch (e) {
       console.error(e);
@@ -63,9 +57,7 @@ function CategoryEditScreen({ category }: { category?: Category }) {
   const handleDelete = async () => {
     if (isEditing && category) {
       try {
-        await database.write(async () => {
-          await category.markAsDeleted();
-        });
+        await deleteCategory(category);
         router.back();
       } catch (e) {
         console.error(e);
@@ -224,25 +216,4 @@ function CategoryEditScreen({ category }: { category?: Category }) {
       </View>
     </>
   );
-}
-
-const CategoryEditScreenWithObservables = withObservables(
-  ["id"],
-  ({ id }: { id: string }) => {
-    return {
-      category: database.get<Category>("categories").findAndObserve(id),
-    };
-  },
-)(CategoryEditScreen);
-
-export default function CategoryEditScreenWrapper() {
-  const params = useLocalSearchParams();
-  const id = params.id as string;
-
-  if (id === "new") {
-    return <CategoryEditScreen />;
-  }
-
-  // Need to wrap correctly so that withObservables receives `id` prop
-  return <CategoryEditScreenWithObservables id={id} />;
 }

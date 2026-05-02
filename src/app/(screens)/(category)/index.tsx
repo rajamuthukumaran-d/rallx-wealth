@@ -1,4 +1,3 @@
-import { withObservables } from "@nozbe/watermelondb/react";
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -10,26 +9,21 @@ import {
   useTheme,
 } from "react-native-paper";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { database } from "../../../data";
-import Category from "../../../data/models/Category";
+import { deleteCategory, useCategories } from "@/data/controllers/useCategories";
+import Category from "@/data/models/Category";
 
-const CategoryListItem = withObservables(
-  ["category"],
-  ({ category }: { category: Category }) => ({
-    category,
-  }),
-)(
-  ({
-    category,
-    theme,
-    router,
-    isLast,
-  }: {
-    category: Category;
-    theme: any;
-    router: any;
-    isLast: boolean;
-  }) => (
+function CategoryListItem({
+  category,
+  theme,
+  router,
+  isLast,
+}: {
+  category: Category;
+  theme: any;
+  router: any;
+  isLast: boolean;
+}) {
+  return (
     <List.Item
       title={category.name}
       style={{
@@ -45,9 +39,7 @@ const CategoryListItem = withObservables(
           icon="delete"
           onPress={async () => {
             try {
-              await database.write(async () => {
-                await category.markAsDeleted();
-              });
+              await deleteCategory(category);
             } catch (e) {
               console.error(e);
             }
@@ -58,13 +50,14 @@ const CategoryListItem = withObservables(
         router.push(`/(screens)/(category)/${category.id}`);
       }}
     />
-  ),
-);
+  );
+}
 
-function ManageCategoriesScreen({ categories }: { categories: Category[] }) {
+export default function ManageCategoriesScreen() {
   const theme = useTheme();
   const router = useRouter();
   const [filterType, setFilterType] = useState("expense");
+  const { categories } = useCategories();
 
   const filteredCategories = categories.filter(
     (cat) => cat.type === filterType,
@@ -150,7 +143,3 @@ function ManageCategoriesScreen({ categories }: { categories: Category[] }) {
     </>
   );
 }
-
-export default withObservables([], () => ({
-  categories: database.get<Category>("categories").query(),
-}))(ManageCategoriesScreen);
