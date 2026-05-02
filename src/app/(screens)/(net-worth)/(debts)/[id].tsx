@@ -73,13 +73,9 @@ export default function DebtFormScreen() {
       debt.remainingAmount ? String(debt.remainingAmount) : "",
     );
     setEmiAmount(debt.emiAmount ? String(debt.emiAmount) : "");
-    setInterestRate(
-      debt.interestRate != null ? String(debt.interestRate) : "",
-    );
+    setInterestRate(debt.interestRate != null ? String(debt.interestRate) : "");
     setRewardPoints(
-      debt.defaultRewardPoints != null
-        ? String(debt.defaultRewardPoints)
-        : "",
+      debt.defaultRewardPoints != null ? String(debt.defaultRewardPoints) : "",
     );
     setRoundOff((debt.roundOffAmount ?? 0) > 0);
     if (debt.dueDate) setDueDate(new Date(debt.dueDate));
@@ -110,7 +106,11 @@ export default function DebtFormScreen() {
     type: debtType,
     status,
     totalAmount: parseFloat(totalAmount) || 0,
-    remainingAmount: parseFloat(remainingAmount) || 0,
+    remainingAmount: remainingAmount
+      ? parseFloat(remainingAmount)
+      : debtType === "loan" || debtType === "emi"
+        ? parseFloat(totalAmount) || 0
+        : 0,
     autoDebit,
     emiAmount: emiAmount ? parseFloat(emiAmount) : undefined,
     interestRate: interestRate ? parseFloat(interestRate) : undefined,
@@ -267,7 +267,7 @@ export default function DebtFormScreen() {
               </View>
               <View className="flex-1">
                 <TextInput
-                  label="Remaining Balance"
+                  label="Balance (Optional)"
                   value={remainingAmount}
                   onChangeText={setRemainingAmount}
                   mode="outlined"
@@ -476,13 +476,7 @@ export default function DebtFormScreen() {
             mode="contained"
             onPress={handleSave}
             loading={saving}
-            disabled={
-              saving ||
-              !name.trim() ||
-              !debtType ||
-              !totalAmount ||
-              !remainingAmount
-            }
+            disabled={saving || !name.trim() || !debtType || !totalAmount}
             className="rounded-full mt-6 py-1"
             icon="content-save"
           >
