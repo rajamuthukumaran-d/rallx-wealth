@@ -207,14 +207,25 @@ export default function AssetsBreakdownScreen() {
                         >
                           {asset.name}
                         </Text>
-                        {asset.interestRate ? (
-                          <Text
-                            className="text-xs mt-0.5"
-                            style={{ color: theme.colors.onSurfaceVariant }}
-                          >
-                            {asset.interestRate}% p.a.
-                          </Text>
-                        ) : null}
+                        <View className="flex-row items-center">
+                          {asset.interestRate ? (
+                            <Text
+                              className="text-xs mt-0.5"
+                              style={{ color: theme.colors.onSurfaceVariant }}
+                            >
+                              {asset.interestRate}% p.a.
+                            </Text>
+                          ) : null}
+                          {asset.maturityDate ? (
+                            <Text
+                              className="text-xs mt-0.5"
+                              style={{ color: theme.colors.onSurfaceVariant }}
+                            >
+                              {asset.interestRate ? " • " : ""}
+                              Matures {new Date(asset.maturityDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </Text>
+                          ) : null}
+                        </View>
                       </View>
                       <Text
                         className="text-base"
