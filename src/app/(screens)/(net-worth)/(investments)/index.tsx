@@ -61,6 +61,10 @@ function getInitials(name: string): string {
   return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
+function effectiveCurrentValue(inv: Investment): number {
+  return inv.currentValue > 0 ? inv.currentValue : inv.investedAmount;
+}
+
 export default function InvestmentsBreakdownScreen() {
   const theme = useTheme();
   const router = useRouter();
@@ -100,7 +104,7 @@ export default function InvestmentsBreakdownScreen() {
   const fx = usdToInr ?? 84;
   const toInr = (amount: number, currency?: string) => convertToInr(amount, currency ?? "INR", fx);
 
-  const totalCurrentValue = investments.reduce((s, i) => s + toInr(i.currentValue, i.currency), 0);
+  const totalCurrentValue = investments.reduce((s, i) => s + toInr(effectiveCurrentValue(i), i.currency), 0);
   const totalInvested = investments.reduce((s, i) => s + toInr(i.investedAmount, i.currency), 0);
   const totalGainLoss = totalCurrentValue - totalInvested;
 
@@ -181,7 +185,7 @@ export default function InvestmentsBreakdownScreen() {
           <View className="px-4 mt-3 gap-3">
             {typeGroups.map(([type, typeInvestments], idx) => {
               const config = getTypeConfig(type, idx);
-              const typeCurrentValue = typeInvestments.reduce((s, i) => s + toInr(i.currentValue, i.currency), 0);
+              const typeCurrentValue = typeInvestments.reduce((s, i) => s + toInr(effectiveCurrentValue(i), i.currency), 0);
               const typeInvested = typeInvestments.reduce((s, i) => s + toInr(i.investedAmount, i.currency), 0);
               const typeGain = typeCurrentValue - typeInvested;
               const symbolGroups = groupBySymbol(typeInvestments);
@@ -230,7 +234,7 @@ export default function InvestmentsBreakdownScreen() {
                     const expandKey = `${type}:${symKey}`;
                     const isOpen = expanded.has(expandKey);
 
-                    const symCurrentValue = symInvestments.reduce((s, i) => s + toInr(i.currentValue, i.currency), 0);
+                    const symCurrentValue = symInvestments.reduce((s, i) => s + toInr(effectiveCurrentValue(i), i.currency), 0);
                     const symInvested = symInvestments.reduce((s, i) => s + toInr(i.investedAmount, i.currency), 0);
                     const symGain = symCurrentValue - symInvested;
                     const symGainColor = symGain >= 0 ? "#6dd58c" : theme.colors.error;
@@ -319,7 +323,7 @@ export default function InvestmentsBreakdownScreen() {
                             style={{ backgroundColor: theme.colors.elevation.level3 }}
                           >
                             {symInvestments.map((inv, invIdx) => {
-                              const invGain = toInr(inv.currentValue, inv.currency) - toInr(inv.investedAmount, inv.currency);
+                              const invGain = toInr(effectiveCurrentValue(inv), inv.currency) - toInr(inv.investedAmount, inv.currency);
                               const invGainColor = invGain >= 0 ? "#6dd58c" : theme.colors.error;
                               return (
                                 <TouchableOpacity
@@ -352,7 +356,7 @@ export default function InvestmentsBreakdownScreen() {
                                   </View>
                                   <View className="items-end">
                                     <Text className="text-sm font-medium" style={{ color: theme.colors.onSurface }}>
-                                      {formatCurrency(toInr(inv.currentValue, inv.currency))}
+                                      {formatCurrency(toInr(effectiveCurrentValue(inv), inv.currency))}
                                     </Text>
                                     <Text className="text-xs mt-0.5" style={{ color: invGainColor }}>
                                       {`${invGain >= 0 ? "+" : ""}${formatCurrency(Math.abs(invGain))}`}

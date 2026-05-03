@@ -26,7 +26,7 @@ export default function NetWorthScreen() {
 
   const fx = usdToInr ?? 84;
   const totalInvestments = investments.reduce(
-    (sum, i) => sum + convertToInr(i.currentValue, i.currency ?? "INR", fx),
+    (sum, i) => sum + convertToInr(i.currentValue > 0 ? i.currentValue : i.investedAmount, i.currency ?? "INR", fx),
     0,
   );
   const netWorth = totalAssets + totalInvestments - totalDebts;
