@@ -239,6 +239,7 @@ export default function InvestmentsBreakdownScreen() {
                     const symGain = symCurrentValue - symInvested;
                     const symGainColor = symGain >= 0 ? "#6dd58c" : theme.colors.error;
                     const symGainPrefix = symGain >= 0 ? "+" : "";
+                    const symHasCurrentValue = symInvestments.some((i) => i.currentValue > 0);
 
                     const rep = symInvestments[0]; // representative investment for avatar/name
                     const totalQty = symInvestments.reduce((s, i) => s + (i.quantity ?? 0), 0);
@@ -302,9 +303,20 @@ export default function InvestmentsBreakdownScreen() {
                               <Text className="text-sm font-medium" style={{ color: theme.colors.onSurface }}>
                                 {formatCurrency(symCurrentValue)}
                               </Text>
-                              <Text className="text-xs mt-0.5" style={{ color: symGainColor }}>
-                                {`${symGainPrefix}${formatCurrency(Math.abs(symGain))}`}
-                              </Text>
+                              {symHasCurrentValue ? (
+                                <Text className="text-xs mt-0.5" style={{ color: symGainColor }}>
+                                  {`${symGainPrefix}${formatCurrency(Math.abs(symGain))}`}
+                                </Text>
+                              ) : (
+                                <View
+                                  className="mt-0.5 px-1.5 py-0.5 rounded-full"
+                                  style={{ backgroundColor: "rgba(168,199,250,0.15)" }}
+                                >
+                                  <Text className="text-xs font-medium" style={{ color: "#a8c7fa" }}>
+                                    Invested
+                                  </Text>
+                                </View>
+                              )}
                             </View>
                             {isGrouped && (
                               <MaterialCommunityIcons
@@ -358,9 +370,20 @@ export default function InvestmentsBreakdownScreen() {
                                     <Text className="text-sm font-medium" style={{ color: theme.colors.onSurface }}>
                                       {formatCurrency(toInr(effectiveCurrentValue(inv), inv.currency))}
                                     </Text>
-                                    <Text className="text-xs mt-0.5" style={{ color: invGainColor }}>
-                                      {`${invGain >= 0 ? "+" : ""}${formatCurrency(Math.abs(invGain))}`}
-                                    </Text>
+                                    {inv.currentValue > 0 ? (
+                                      <Text className="text-xs mt-0.5" style={{ color: invGainColor }}>
+                                        {`${invGain >= 0 ? "+" : ""}${formatCurrency(Math.abs(invGain))}`}
+                                      </Text>
+                                    ) : (
+                                      <View
+                                        className="mt-0.5 px-1.5 py-0.5 rounded-full"
+                                        style={{ backgroundColor: "rgba(168,199,250,0.15)" }}
+                                      >
+                                        <Text className="text-xs font-medium" style={{ color: "#a8c7fa" }}>
+                                          Invested
+                                        </Text>
+                                      </View>
+                                    )}
                                   </View>
                                 </TouchableOpacity>
                               );
