@@ -28,7 +28,26 @@ const INVESTMENT_TYPES = [
   { label: "Crypto", value: "crypto" },
   { label: "ETF", value: "etf" },
   { label: "Bonds", value: "bonds" },
+  { label: "Gold", value: "gold" },
+  { label: "Silver", value: "silver" },
 ];
+
+function mapInstrumentType(instrumentType: string): string {
+  switch (instrumentType.toUpperCase()) {
+    case "EQUITY":
+      return "stock";
+    case "ETF":
+      return "etf";
+    case "CRYPTOCURRENCY":
+      return "crypto";
+    case "MUTUALFUND":
+      return "mutual_fund";
+    case "BOND":
+      return "bonds";
+    default:
+      return "";
+  }
+}
 
 export default function InvestmentFormScreen() {
   const theme = useTheme();
@@ -38,24 +57,32 @@ export default function InvestmentFormScreen() {
 
   const { investment } = useInvestment(isAdding ? "" : id);
   const formPopulated = useRef(false);
+  const lastUnitPrice = useRef<number | null>(null);
+  const currentValueDebounce = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const [name, setName] = useState("");
   const [investType, setInvestType] = useState("");
   const [typeMenuVisible, setTypeMenuVisible] = useState(false);
   const [symbol, setSymbol] = useState("");
-  const [exchange, setExchange] = useState("");
+  const [exchange, setExchange] = useState("NSE"); // default to NSE
   const [exchangeMenuVisible, setExchangeMenuVisible] = useState(false);
   const [currency, setCurrency] = useState("");
   const [platform, setPlatform] = useState("");
   const [investedAmount, setInvestedAmount] = useState("");
   const [currentValue, setCurrentValue] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [avgUnitValue, setAvgUnitValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [fetchingPrice, setFetchingPrice] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
-  const [fetchedMeta, setFetchedMeta] = useState<{ name: string; currency: string } | null>(null);
+  const [fetchedMeta, setFetchedMeta] = useState<{
+    name: string;
+    currency: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!investment || formPopulated.current) return;
@@ -63,16 +90,62 @@ export default function InvestmentFormScreen() {
     setName(investment.name);
     setInvestType(investment.type);
     setSymbol(investment.symbol ?? "");
-    setExchange(investment.exchange ?? "");
+    setExchange(investment.exchange ?? "NSE");
     setCurrency(investment.currency ?? "");
     setPlatform(investment.platform ?? "");
-    setInvestedAmount(investment.investedAmount ? String(investment.investedAmount) : "");
-    setCurrentValue(investment.currentValue ? String(investment.currentValue) : "");
+    setInvestedAmount(
+      investment.investedAmount ? String(investment.investedAmount) : "",
+    );
+    setCurrentValue(
+      investment.currentValue ? String(investment.currentValue) : "",
+    );
     setQuantity(investment.quantity != null ? String(investment.quantity) : "");
+    // Derive unit price so quantity changes can update currentValue without a fresh API call
+    if (
+      investment.quantity &&
+      investment.quantity > 0 &&
+      investment.currentValue
+    ) {
+      lastUnitPrice.current = investment.currentValue / investment.quantity;
+    }
   }, [investment]);
 
-  const selectedTypeLabel = INVESTMENT_TYPES.find((t) => t.value === investType)?.label ?? "";
-  const selectedExchangeLabel = EXCHANGES.find((e) => e.value === exchange)?.label ?? "";
+  // Recalculate invested amount when avg unit value or quantity changes
+  const handleAvgUnitValueChange = (val: string) => {
+    setAvgUnitValue(val);
+    const avg = parseFloat(val);
+    const qty = parseFloat(quantity);
+    if (!isNaN(avg) && !isNaN(qty) && qty > 0) {
+      setInvestedAmount(String(avg * qty));
+    }
+  };
+
+  const handleQuantityChange = (val: string) => {
+    setQuantity(val);
+    const avg = parseFloat(avgUnitValue);
+    const qty = parseFloat(val);
+    if (!isNaN(avg) && avg > 0 && !isNaN(qty) && qty > 0) {
+      setInvestedAmount(String(avg * qty));
+    }
+    if (currentValueDebounce.current)
+      clearTimeout(currentValueDebounce.current);
+    if (lastUnitPrice.current !== null && !isNaN(qty) && qty > 0) {
+      currentValueDebounce.current = setTimeout(() => {
+        setCurrentValue(String(lastUnitPrice.current! * qty));
+      }, 500);
+    }
+  };
+
+  // Clear avg unit value if user edits invested amount directly
+  const handleInvestedAmountChange = (val: string) => {
+    setInvestedAmount(val);
+    setAvgUnitValue("");
+  };
+
+  const selectedTypeLabel =
+    INVESTMENT_TYPES.find((t) => t.value === investType)?.label ?? "";
+  const selectedExchangeLabel =
+    EXCHANGES.find((e) => e.value === exchange)?.label ?? "";
 
   const canFetchPrice = !!symbol.trim() && !!exchange;
 
@@ -83,12 +156,15 @@ export default function InvestmentFormScreen() {
     setFetchedMeta(null);
     try {
       const quote = await fetchStockQuote(symbol.trim(), exchange);
+      lastUnitPrice.current = quote.price;
       const qty = parseFloat(quantity) || null;
       const marketValue = qty != null ? quote.price * qty : quote.price;
       setCurrentValue(String(marketValue));
       setCurrency(quote.currency);
       setFetchedMeta({ name: quote.name, currency: quote.currency });
       if (!name.trim()) setName(quote.name);
+      const mappedType = mapInstrumentType(quote.instrumentType);
+      if (mappedType) setInvestType(mappedType);
     } catch (e: any) {
       setPriceError(e?.message ?? "Failed to fetch price.");
     } finally {
@@ -166,24 +242,38 @@ export default function InvestmentFormScreen() {
       />
 
       <Portal>
-        <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
+        <Dialog
+          visible={deleteDialogVisible}
+          onDismiss={() => setDeleteDialogVisible(false)}
+        >
           <Dialog.Icon icon="alert-circle-outline" />
-          <Dialog.Title style={{ textAlign: "center" }}>Delete Investment?</Dialog.Title>
+          <Dialog.Title style={{ textAlign: "center" }}>
+            Delete Investment?
+          </Dialog.Title>
           <Dialog.Content>
             <Text style={{ color: theme.colors.onSurfaceVariant }}>
               {`"${name}" will be removed from your investments. This cannot be undone.`}
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setDeleteDialogVisible(false)}>Cancel</Button>
-            <Button textColor={theme.colors.error} loading={deleting} onPress={handleDelete}>
+            <Button onPress={() => setDeleteDialogVisible(false)}>
+              Cancel
+            </Button>
+            <Button
+              textColor={theme.colors.error}
+              loading={deleting}
+              onPress={handleDelete}
+            >
               Delete
             </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
 
-      <View className="flex-1" style={{ backgroundColor: theme.colors.background }}>
+      <View
+        className="flex-1"
+        style={{ backgroundColor: theme.colors.background }}
+      >
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
@@ -266,7 +356,9 @@ export default function InvestmentFormScreen() {
                   visible={exchangeMenuVisible}
                   onDismiss={() => setExchangeMenuVisible(false)}
                   anchor={
-                    <TouchableOpacity onPress={() => setExchangeMenuVisible(true)}>
+                    <TouchableOpacity
+                      onPress={() => setExchangeMenuVisible(true)}
+                    >
                       <TextInput
                         label="Exchange"
                         value={selectedExchangeLabel}
@@ -295,8 +387,18 @@ export default function InvestmentFormScreen() {
               </View>
             </View>
 
+            <TextInput
+              label="Currency"
+              value={currency}
+              onChangeText={setCurrency}
+              mode="outlined"
+              autoCapitalize="characters"
+              placeholder="e.g. INR, USD"
+              style={inputStyle}
+            />
+
             {/* Fetch price button */}
-            <View>
+            <View className="mt-2">
               <Button
                 mode="outlined"
                 onPress={handleFetchPrice}
@@ -317,16 +419,6 @@ export default function InvestmentFormScreen() {
                 </HelperText>
               )}
             </View>
-
-            <TextInput
-              label="Currency"
-              value={currency}
-              onChangeText={setCurrency}
-              mode="outlined"
-              autoCapitalize="characters"
-              placeholder="e.g. INR, USD"
-              style={inputStyle}
-            />
           </View>
 
           {/* Valuation */}
@@ -338,12 +430,21 @@ export default function InvestmentFormScreen() {
               Valuation
             </Text>
 
+            <TextInput
+              label="Quantity / Units"
+              value={quantity}
+              onChangeText={handleQuantityChange}
+              mode="outlined"
+              keyboardType="decimal-pad"
+              style={inputStyle}
+            />
+
             <View className="flex-row gap-3">
               <View className="flex-1">
                 <TextInput
-                  label="Amount Invested"
-                  value={investedAmount}
-                  onChangeText={setInvestedAmount}
+                  label="Avg. Unit Value"
+                  value={avgUnitValue}
+                  onChangeText={handleAvgUnitValueChange}
                   mode="outlined"
                   keyboardType="decimal-pad"
                   style={inputStyle}
@@ -351,9 +452,9 @@ export default function InvestmentFormScreen() {
               </View>
               <View className="flex-1">
                 <TextInput
-                  label="Current Value"
-                  value={currentValue}
-                  onChangeText={setCurrentValue}
+                  label="Amount Invested"
+                  value={investedAmount}
+                  onChangeText={handleInvestedAmountChange}
                   mode="outlined"
                   keyboardType="decimal-pad"
                   style={inputStyle}
@@ -361,10 +462,14 @@ export default function InvestmentFormScreen() {
               </View>
             </View>
 
+            <HelperText type="info" visible style={{ marginTop: -8 }}>
+              Set Avg. Unit Value + Quantity to auto-calculate Amount Invested
+            </HelperText>
+
             <TextInput
-              label="Quantity / Units (optional)"
-              value={quantity}
-              onChangeText={setQuantity}
+              label="Current Value"
+              value={currentValue}
+              onChangeText={setCurrentValue}
               mode="outlined"
               keyboardType="decimal-pad"
               style={inputStyle}

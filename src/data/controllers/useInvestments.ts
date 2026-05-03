@@ -2,6 +2,7 @@ import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
 import { database } from "../index";
 import Investment from "../models/Investment";
+import { fetchStockQuote } from "@/utils/stockPrice";
 
 export interface InvestmentsData {
   investments: Investment[];
@@ -19,7 +20,10 @@ export function useInvestments(): InvestmentsData {
     const subscription = database
       .get<Investment>("investments")
       .query(Q.where("is_deleted", false))
-      .observe()
+      .observeWithColumns([
+        "name", "type", "symbol", "invested_amount", "current_value",
+        "quantity", "platform", "exchange", "currency", "updated_at",
+      ])
       .subscribe((data) => {
         setInvestments(data);
         setIsLoading(false);
@@ -116,4 +120,27 @@ export async function deleteInvestment(investment: Investment): Promise<void> {
       r.isDeleted = true;
     });
   });
+}
+
+// Fetches live prices for all investments that have a symbol + exchange and updates currentValue.
+// Runs all fetches concurrently; silently skips any that fail (e.g. bad symbol, offline).
+export async function refreshInvestmentPrices(investments: Investment[]): Promise<void> {
+  const eligible = investments.filter((i) => i.symbol && i.exchange);
+  await Promise.allSettled(
+    eligible.map(async (inv) => {
+      try {
+        const quote = await fetchStockQuote(inv.symbol!, inv.exchange!);
+        const newValue = inv.quantity ? quote.price * inv.quantity : quote.price;
+        await database.write(async () => {
+          const record = await database.get<Investment>("investments").find(inv.id);
+          await record.update((r) => {
+            r.currentValue = newValue;
+            r.currency = quote.currency as any;
+          });
+        });
+      } catch {
+        // skip silently — bad symbol, network error, etc.
+      }
+    }),
+  );
 }

@@ -6,6 +6,7 @@ export interface StockQuote {
   name: string;
   price: number;
   currency: string;
+  instrumentType: string;
 }
 
 export const EXCHANGES: { label: string; value: string; suffix: string }[] = [
@@ -50,6 +51,7 @@ export async function fetchStockQuote(symbol: string, exchange: string): Promise
     name: meta.shortName ?? meta.longName ?? yahooSymbol,
     price: meta.regularMarketPrice,
     currency: meta.currency ?? "USD",
+    instrumentType: meta.instrumentType ?? "",
   };
 }
 
