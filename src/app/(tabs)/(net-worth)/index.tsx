@@ -8,8 +8,10 @@ import { useAssets } from "@/data/controllers/useAssets";
 import { useDebts } from "@/data/controllers/useDebts";
 import { useInvestments } from "@/data/controllers/useInvestments";
 import { useNetWorth } from "@/data/controllers/useNetWorth";
+import { useUsdToInr } from "@/hooks/useExchangeRate";
 import { formatCurrency } from "@/utils/currency";
 import { getUniqueTypes } from "@/utils/string";
+import { convertToInr } from "@/utils/stockPrice";
 import { BreakdownCard, CARD_COLORS } from "@/components/NetWorth/BreakdownCard";
 import { RecentUpdateRow } from "@/components/NetWorth/RecentUpdateRow";
 
@@ -19,8 +21,15 @@ export default function NetWorthScreen() {
   const { assets } = useAssets();
   const { investments } = useInvestments();
   const { debts } = useDebts();
-  const { totalAssets, totalInvestments, totalDebts, netWorth, recentUpdates, isLoading } =
-    useNetWorth();
+  const { totalAssets, totalDebts, recentUpdates, isLoading } = useNetWorth();
+  const { rate: usdToInr } = useUsdToInr();
+
+  const fx = usdToInr ?? 84;
+  const totalInvestments = investments.reduce(
+    (sum, i) => sum + convertToInr(i.currentValue, i.currency ?? "INR", fx),
+    0,
+  );
+  const netWorth = totalAssets + totalInvestments - totalDebts;
 
   const gross = totalAssets + totalInvestments + totalDebts;
   const assetsPct = gross > 0 ? (totalAssets / gross) * 100 : 0;

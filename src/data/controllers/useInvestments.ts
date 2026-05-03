@@ -75,6 +75,8 @@ export interface InvestmentFormData {
   type: string;
   symbol?: string;
   platform?: string;
+  exchange?: string;
+  currency?: string;
   investedAmount: number;
   currentValue: number;
   quantity?: number;
@@ -85,6 +87,8 @@ function applyInvestmentFields(record: Investment, data: InvestmentFormData) {
   record.type = data.type;
   record.symbol = data.symbol as any;
   record.platform = data.platform as any;
+  record.exchange = data.exchange as any;
+  record.currency = data.currency as any;
   record.investedAmount = data.investedAmount;
   record.currentValue = data.currentValue;
   record.quantity = data.quantity as any;

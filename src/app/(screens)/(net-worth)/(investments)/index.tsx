@@ -1,7 +1,9 @@
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useInvestments } from "@/data/controllers/useInvestments";
 import Investment from "@/data/models/Investment";
+import { useUsdToInr } from "@/hooks/useExchangeRate";
 import { formatCurrency, formatFullCurrency } from "@/utils/currency";
+import { convertToInr } from "@/utils/stockPrice";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { ScrollView, TouchableOpacity, View } from "react-native";
@@ -81,12 +83,20 @@ function getInitials(name: string): string {
 export default function InvestmentsBreakdownScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const { investments, totalInvested, totalCurrentValue, totalGainLoss, isLoading } =
-    useInvestments();
+  const { investments, isLoading } = useInvestments();
+  const { rate: usdToInr } = useUsdToInr();
   const groups = groupByType(investments);
 
-  const gainLossColor =
-    totalGainLoss >= 0 ? "#6dd58c" : theme.colors.error;
+  const fx = usdToInr ?? 84;
+
+  const toInr = (amount: number, currency?: string) =>
+    convertToInr(amount, currency ?? "INR", fx);
+
+  const totalCurrentValue = investments.reduce((s, i) => s + toInr(i.currentValue, i.currency), 0);
+  const totalInvested = investments.reduce((s, i) => s + toInr(i.investedAmount, i.currency), 0);
+  const totalGainLoss = totalCurrentValue - totalInvested;
+
+  const gainLossColor = totalGainLoss >= 0 ? "#6dd58c" : theme.colors.error;
   const gainLossPrefix = totalGainLoss >= 0 ? "+" : "";
   const gainLossPct =
     totalInvested > 0
@@ -160,11 +170,11 @@ export default function InvestmentsBreakdownScreen() {
             {groups.map(([type, typeInvestments], idx) => {
               const config = getTypeConfig(type, idx);
               const typeCurrentValue = typeInvestments.reduce(
-                (sum, i) => sum + i.currentValue,
+                (sum, i) => sum + toInr(i.currentValue, i.currency),
                 0,
               );
               const typeInvested = typeInvestments.reduce(
-                (sum, i) => sum + i.investedAmount,
+                (sum, i) => sum + toInr(i.investedAmount, i.currency),
                 0,
               );
               const typeGain = typeCurrentValue - typeInvested;
@@ -214,7 +224,7 @@ export default function InvestmentsBreakdownScreen() {
 
                   {/* Individual investment rows */}
                   {typeInvestments.map((inv, iIdx) => {
-                    const gain = inv.currentValue - inv.investedAmount;
+                    const gain = toInr(inv.currentValue, inv.currency) - toInr(inv.investedAmount, inv.currency);
                     const gainColor = gain >= 0 ? "#6dd58c" : theme.colors.error;
                     const gainPrefix = gain >= 0 ? "+" : "";
 
@@ -276,7 +286,7 @@ export default function InvestmentsBreakdownScreen() {
                             className="text-sm font-medium"
                             style={{ color: theme.colors.onSurface }}
                           >
-                            {formatCurrency(inv.currentValue)}
+                            {formatCurrency(toInr(inv.currentValue, inv.currency))}
                           </Text>
                           <Text className="text-xs mt-0.5" style={{ color: gainColor }}>
                             {`${gainPrefix}${formatCurrency(Math.abs(gain))}`}

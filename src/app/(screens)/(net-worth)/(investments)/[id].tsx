@@ -6,6 +6,7 @@ import {
   updateInvestment,
   useInvestment,
 } from "@/data/controllers/useInvestments";
+import { EXCHANGES, fetchStockQuote } from "@/utils/stockPrice";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
@@ -13,6 +14,7 @@ import {
   Appbar,
   Button,
   Dialog,
+  HelperText,
   Menu,
   Portal,
   Text,
@@ -41,6 +43,9 @@ export default function InvestmentFormScreen() {
   const [investType, setInvestType] = useState("");
   const [typeMenuVisible, setTypeMenuVisible] = useState(false);
   const [symbol, setSymbol] = useState("");
+  const [exchange, setExchange] = useState("");
+  const [exchangeMenuVisible, setExchangeMenuVisible] = useState(false);
+  const [currency, setCurrency] = useState("");
   const [platform, setPlatform] = useState("");
   const [investedAmount, setInvestedAmount] = useState("");
   const [currentValue, setCurrentValue] = useState("");
@@ -48,6 +53,9 @@ export default function InvestmentFormScreen() {
   const [saving, setSaving] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [fetchingPrice, setFetchingPrice] = useState(false);
+  const [priceError, setPriceError] = useState<string | null>(null);
+  const [fetchedMeta, setFetchedMeta] = useState<{ name: string; currency: string } | null>(null);
 
   useEffect(() => {
     if (!investment || formPopulated.current) return;
@@ -55,6 +63,8 @@ export default function InvestmentFormScreen() {
     setName(investment.name);
     setInvestType(investment.type);
     setSymbol(investment.symbol ?? "");
+    setExchange(investment.exchange ?? "");
+    setCurrency(investment.currency ?? "");
     setPlatform(investment.platform ?? "");
     setInvestedAmount(investment.investedAmount ? String(investment.investedAmount) : "");
     setCurrentValue(investment.currentValue ? String(investment.currentValue) : "");
@@ -62,11 +72,36 @@ export default function InvestmentFormScreen() {
   }, [investment]);
 
   const selectedTypeLabel = INVESTMENT_TYPES.find((t) => t.value === investType)?.label ?? "";
+  const selectedExchangeLabel = EXCHANGES.find((e) => e.value === exchange)?.label ?? "";
+
+  const canFetchPrice = !!symbol.trim() && !!exchange;
+
+  const handleFetchPrice = async () => {
+    if (!canFetchPrice) return;
+    setFetchingPrice(true);
+    setPriceError(null);
+    setFetchedMeta(null);
+    try {
+      const quote = await fetchStockQuote(symbol.trim(), exchange);
+      const qty = parseFloat(quantity) || null;
+      const marketValue = qty != null ? quote.price * qty : quote.price;
+      setCurrentValue(String(marketValue));
+      setCurrency(quote.currency);
+      setFetchedMeta({ name: quote.name, currency: quote.currency });
+      if (!name.trim()) setName(quote.name);
+    } catch (e: any) {
+      setPriceError(e?.message ?? "Failed to fetch price.");
+    } finally {
+      setFetchingPrice(false);
+    }
+  };
 
   const formData = (): InvestmentFormData => ({
     name: name.trim(),
     type: investType,
     symbol: symbol.trim() || undefined,
+    exchange: exchange || undefined,
+    currency: currency || undefined,
     platform: platform.trim() || undefined,
     investedAmount: parseFloat(investedAmount) || 0,
     currentValue: parseFloat(currentValue) || 0,
@@ -154,7 +189,7 @@ export default function InvestmentFormScreen() {
           contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Main fields */}
+          {/* Identity */}
           <View className="rounded-3xl p-4 gap-3 mb-4" style={sectionBg}>
             <TextInput
               label="Investment Name"
@@ -193,30 +228,108 @@ export default function InvestmentFormScreen() {
               ))}
             </Menu>
 
+            <TextInput
+              label="Platform"
+              value={platform}
+              onChangeText={setPlatform}
+              mode="outlined"
+              style={inputStyle}
+            />
+          </View>
+
+          {/* Symbol + Exchange */}
+          <View className="rounded-3xl p-4 gap-3 mb-4" style={sectionBg}>
+            <Text
+              className="text-xs font-medium tracking-widest uppercase mb-1"
+              style={{ color: theme.colors.onSurfaceVariant }}
+            >
+              Market Data
+            </Text>
+
             <View className="flex-row gap-3">
               <View className="flex-1">
                 <TextInput
                   label="Ticker / Symbol"
                   value={symbol}
-                  onChangeText={setSymbol}
+                  onChangeText={(v) => {
+                    setSymbol(v);
+                    setPriceError(null);
+                    setFetchedMeta(null);
+                  }}
                   mode="outlined"
                   autoCapitalize="characters"
                   style={inputStyle}
                 />
               </View>
               <View className="flex-1">
-                <TextInput
-                  label="Platform"
-                  value={platform}
-                  onChangeText={setPlatform}
-                  mode="outlined"
-                  style={inputStyle}
-                />
+                <Menu
+                  visible={exchangeMenuVisible}
+                  onDismiss={() => setExchangeMenuVisible(false)}
+                  anchor={
+                    <TouchableOpacity onPress={() => setExchangeMenuVisible(true)}>
+                      <TextInput
+                        label="Exchange"
+                        value={selectedExchangeLabel}
+                        mode="outlined"
+                        editable={false}
+                        pointerEvents="none"
+                        right={<TextInput.Icon icon="chevron-down" />}
+                        style={inputStyle}
+                      />
+                    </TouchableOpacity>
+                  }
+                >
+                  {EXCHANGES.map((e) => (
+                    <Menu.Item
+                      key={e.value}
+                      title={e.label}
+                      onPress={() => {
+                        setExchange(e.value);
+                        setExchangeMenuVisible(false);
+                        setPriceError(null);
+                        setFetchedMeta(null);
+                      }}
+                    />
+                  ))}
+                </Menu>
               </View>
             </View>
+
+            {/* Fetch price button */}
+            <View>
+              <Button
+                mode="outlined"
+                onPress={handleFetchPrice}
+                loading={fetchingPrice}
+                disabled={fetchingPrice || !canFetchPrice}
+                icon="refresh"
+              >
+                Fetch Current Price
+              </Button>
+              {fetchedMeta && (
+                <HelperText type="info" visible>
+                  {fetchedMeta.name} · {fetchedMeta.currency}
+                </HelperText>
+              )}
+              {priceError && (
+                <HelperText type="error" visible>
+                  {priceError}
+                </HelperText>
+              )}
+            </View>
+
+            <TextInput
+              label="Currency"
+              value={currency}
+              onChangeText={setCurrency}
+              mode="outlined"
+              autoCapitalize="characters"
+              placeholder="e.g. INR, USD"
+              style={inputStyle}
+            />
           </View>
 
-          {/* Valuation fields */}
+          {/* Valuation */}
           <View className="rounded-3xl p-4 gap-3" style={sectionBg}>
             <Text
               className="text-xs font-medium tracking-widest uppercase mb-1"
@@ -233,7 +346,6 @@ export default function InvestmentFormScreen() {
                   onChangeText={setInvestedAmount}
                   mode="outlined"
                   keyboardType="decimal-pad"
-                  left={<TextInput.Affix text="$" />}
                   style={inputStyle}
                 />
               </View>
@@ -244,7 +356,6 @@ export default function InvestmentFormScreen() {
                   onChangeText={setCurrentValue}
                   mode="outlined"
                   keyboardType="decimal-pad"
-                  left={<TextInput.Affix text="$" />}
                   style={inputStyle}
                 />
               </View>
