@@ -11,6 +11,8 @@ export default class Investment extends Model {
   @field("current_value") currentValue!: number;
   @field("quantity") quantity?: number;
   @text("platform") platform?: string;
+  @text("exchange") exchange?: string;
+  @text("currency") currency?: string;
 
   @readonly @date("created_at") createdAt!: number;
   @readonly @date("updated_at") updatedAt!: number;

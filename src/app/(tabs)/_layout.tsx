@@ -32,7 +32,7 @@ export default function TabLayout() {
         }}
       />
       <MaterialBottomTabs.Screen
-        name="net-worth"
+        name="(net-worth)/index"
         options={{
           title: "Net Worth",
           tabBarIcon: ({ color }: { color: string }) => (
