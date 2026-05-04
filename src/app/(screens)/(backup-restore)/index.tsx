@@ -1,8 +1,7 @@
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { useState } from "react";
 import { BackHandler, Platform, ScrollView, View } from "react-native";
 import {
-    Appbar,
     Button,
     Dialog,
     Divider,
@@ -13,6 +12,7 @@ import {
     Text,
     useTheme,
 } from "react-native-paper";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import {
     exportDatabase,
     pickBackupFile,
@@ -20,7 +20,6 @@ import {
 } from "../../../data/backupService";
 
 export default function BackupRestoreScreen() {
-  const router = useRouter();
   const theme = useTheme();
 
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -118,12 +117,7 @@ export default function BackupRestoreScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          header: () => (
-            <Appbar.Header elevated>
-              <Appbar.BackAction onPress={() => router.back()} />
-              <Appbar.Content title="Backup & Restore" />
-            </Appbar.Header>
-          ),
+          header: () => <ScreenHeader title="Backup & Restore" />,
         }}
       />
       <View

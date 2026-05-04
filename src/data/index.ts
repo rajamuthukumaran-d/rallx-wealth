@@ -7,10 +7,12 @@ import Debt from "./models/Debt";
 import Investment from "./models/Investment";
 import Transaction from "./models/Transaction";
 import TransactionAmount from "./models/TransactionAmount";
+import { migrations } from "./migrations";
 import { schema } from "./schema";
 
 const adapter = new SQLiteAdapter({
   schema,
+  migrations,
   // jsi: true /* recommended for React Native */,
   onSetUpError: (error) => {
     // Database failed to load

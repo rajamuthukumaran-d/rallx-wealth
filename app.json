@@ -50,7 +50,8 @@
             "deploymentTarget": "16.4"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

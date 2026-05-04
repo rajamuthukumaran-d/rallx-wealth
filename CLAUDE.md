@@ -101,6 +101,16 @@ Foreign keys use `@relation`:
 | `transaction_amounts` | `transaction_id`, `asset_id`, `debt_id`, `amount` — handles split payments |
 | `budgets` | `amount`, `period` (weekly/bi-weekly/monthly), `start_date`, `category_id`, `rollover_enabled` |
 
+## Development Guidelines
+
+### Data Manipulation with WatermelonDB
+
+For any data manipulation using WatermelonDB, create and use hooks in `src/data/hooks/` named after the model (e.g., `useCategories`, `useAssets`, `useTransactions`). This keeps data logic centralized and reusable across components.
+
+### Design Mockups
+
+When downloading mockups from Stitch, save them in the `mockups/` folder at the project root.
+
 ## Implementation Status
 
 **Complete:** Schema, all models, WatermelonDB init, category CRUD, settings screen, backup/restore (export/import), default seed data, theming, navigation structure.
