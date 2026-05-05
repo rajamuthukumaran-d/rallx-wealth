@@ -1,0 +1,400 @@
+import { ScreenHeader } from "@/components/ScreenHeader";
+import {
+  SellInvestmentData,
+  sellInvestment,
+  useInvestmentGroup,
+} from "@/data/controllers/useInvestments";
+import Investment from "@/data/models/Investment";
+import { formatCurrency } from "@/utils/currency";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useMemo, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+} from "react-native";
+import {
+  ActivityIndicator,
+  Button,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
+
+type FifoLotPreview = {
+  lot: Investment;
+  unitsReduced?: number;
+  amountReduced?: number;
+  fullyConsumed: boolean;
+};
+
+function computeFifoPreview(
+  lots: Investment[],
+  unitsSold: number | undefined,
+  soldAmount: number | undefined,
+): FifoLotPreview[] {
+  const result: FifoLotPreview[] = [];
+
+  if (unitsSold !== undefined && unitsSold > 0) {
+    let remaining = unitsSold;
+    for (const lot of lots) {
+      if (remaining <= 0) break;
+      const qty = lot.quantity ?? 0;
+      if (qty <= 0) continue;
+      if (qty <= remaining) {
+        result.push({ lot, unitsReduced: qty, fullyConsumed: true });
+        remaining -= qty;
+      } else {
+        result.push({ lot, unitsReduced: remaining, fullyConsumed: false });
+        remaining = 0;
+      }
+    }
+  } else if (soldAmount !== undefined && soldAmount > 0) {
+    let remaining = soldAmount;
+    for (const lot of lots) {
+      if (remaining <= 0) break;
+      if (lot.investedAmount <= remaining) {
+        result.push({ lot, amountReduced: lot.investedAmount, fullyConsumed: true });
+        remaining -= lot.investedAmount;
+      } else {
+        result.push({ lot, amountReduced: remaining, fullyConsumed: false });
+        remaining = 0;
+      }
+    }
+  }
+
+  return result;
+}
+
+function formatUnits(qty: number) {
+  return qty % 1 === 0 ? qty.toFixed(0) : qty.toFixed(4);
+}
+
+export default function SellInvestmentScreen() {
+  const theme = useTheme();
+  const router = useRouter();
+  const { symbol, name, investmentType } = useLocalSearchParams<{
+    symbol: string;
+    name: string;
+    investmentType: string;
+  }>();
+
+  const { investments: lots, isLoading } = useInvestmentGroup(
+    symbol || undefined,
+    name,
+  );
+
+  const [unitsSoldStr, setUnitsSoldStr] = useState("");
+  const [soldAmountStr, setSoldAmountStr] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const unitsSold = unitsSoldStr ? parseFloat(unitsSoldStr) : undefined;
+  const soldAmount = soldAmountStr ? parseFloat(soldAmountStr) : undefined;
+
+  const hasAtLeastOne =
+    (unitsSold !== undefined && !isNaN(unitsSold) && unitsSold > 0) ||
+    (soldAmount !== undefined && !isNaN(soldAmount) && soldAmount > 0);
+
+  const totalUnits = lots.reduce((sum, l) => sum + (l.quantity ?? 0), 0);
+  const totalInvested = lots.reduce((sum, l) => sum + l.investedAmount, 0);
+  const totalCurrentValue = lots.reduce((sum, l) => sum + (l.currentValue ?? 0), 0);
+
+  const preview = useMemo(
+    () => computeFifoPreview(lots, unitsSold, soldAmount),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lots, unitsSoldStr, soldAmountStr],
+  );
+
+  const estimatedPnL = useMemo(() => {
+    if (
+      soldAmount && soldAmount > 0 &&
+      unitsSold && unitsSold > 0 &&
+      totalUnits > 0 && totalInvested > 0
+    ) {
+      const costBasis = (unitsSold / totalUnits) * totalInvested;
+      return soldAmount - costBasis;
+    }
+    return null;
+  }, [soldAmount, unitsSold, totalUnits, totalInvested]);
+
+  const handleSell = async () => {
+    if (!hasAtLeastOne || saving) return;
+    setSaving(true);
+    try {
+      const payload: SellInvestmentData = {
+        symbol: symbol || undefined,
+        name,
+        unitsSold: unitsSold && unitsSold > 0 ? unitsSold : undefined,
+        soldAmount: soldAmount && soldAmount > 0 ? soldAmount : undefined,
+      };
+      await sellInvestment(payload);
+      router.back();
+    } catch (e) {
+      console.error(e);
+      setSaving(false);
+    }
+  };
+
+  const displayName = symbol ? `${name} (${symbol})` : name;
+  const typeLabel = investmentType
+    ? investmentType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "";
+
+  return (
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View className="flex-1" style={{ backgroundColor: theme.colors.background }}>
+        <ScreenHeader title="Sell / Redeem" />
+
+        {isLoading ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator />
+          </View>
+        ) : (
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            className="flex-1"
+          >
+            <ScrollView
+              contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Investment Summary */}
+              <View
+                className="rounded-3xl p-4 gap-3 mb-4"
+                style={{ backgroundColor: theme.colors.elevation.level1 }}
+              >
+                <View className="flex-row items-center gap-2 flex-wrap">
+                  <Text
+                    className="text-base font-semibold"
+                    style={{ color: theme.colors.onSurface }}
+                  >
+                    {displayName}
+                  </Text>
+                  {typeLabel ? (
+                    <View
+                      className="px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: "rgba(168,199,250,0.15)" }}
+                    >
+                      <Text className="text-xs" style={{ color: "#a8c7fa" }}>
+                        {typeLabel}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                <View className="flex-row gap-6">
+                  {totalUnits > 0 && (
+                    <View>
+                      <Text
+                        className="text-xs"
+                        style={{ color: theme.colors.onSurfaceVariant }}
+                      >
+                        Total Units
+                      </Text>
+                      <Text
+                        className="text-sm font-medium"
+                        style={{ color: theme.colors.onSurface }}
+                      >
+                        {formatUnits(totalUnits)}
+                      </Text>
+                    </View>
+                  )}
+                  <View>
+                    <Text
+                      className="text-xs"
+                      style={{ color: theme.colors.onSurfaceVariant }}
+                    >
+                      Invested
+                    </Text>
+                    <Text
+                      className="text-sm font-medium"
+                      style={{ color: theme.colors.onSurface }}
+                    >
+                      {formatCurrency(totalInvested)}
+                    </Text>
+                  </View>
+                  {totalCurrentValue > 0 && (
+                    <View>
+                      <Text
+                        className="text-xs"
+                        style={{ color: theme.colors.onSurfaceVariant }}
+                      >
+                        Current
+                      </Text>
+                      <Text
+                        className="text-sm font-medium"
+                        style={{ color: theme.colors.onSurface }}
+                      >
+                        {formatCurrency(totalCurrentValue)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <Text
+                  className="text-xs"
+                  style={{ color: theme.colors.onSurfaceVariant }}
+                >
+                  {lots.length} lot{lots.length !== 1 ? "s" : ""} held · FIFO order
+                </Text>
+              </View>
+
+              {/* Sale Details */}
+              <View
+                className="rounded-3xl p-4 gap-3 mb-4"
+                style={{ backgroundColor: theme.colors.elevation.level1 }}
+              >
+                <Text
+                  className="text-sm font-medium"
+                  style={{ color: theme.colors.onSurface }}
+                >
+                  Sale Details
+                </Text>
+                <Text
+                  className="text-xs mb-1"
+                  style={{ color: theme.colors.onSurfaceVariant }}
+                >
+                  Enter units sold, amount received, or both. At least one is required.
+                </Text>
+
+                <TextInput
+                  label="Units Sold"
+                  value={unitsSoldStr}
+                  onChangeText={setUnitsSoldStr}
+                  keyboardType="decimal-pad"
+                  mode="outlined"
+                  style={{ backgroundColor: theme.colors.elevation.level2 }}
+                  right={<TextInput.Affix text="units" />}
+                />
+
+                <TextInput
+                  label="Amount Received"
+                  value={soldAmountStr}
+                  onChangeText={setSoldAmountStr}
+                  keyboardType="decimal-pad"
+                  mode="outlined"
+                  style={{ backgroundColor: theme.colors.elevation.level2 }}
+                  left={<TextInput.Affix text="₹" />}
+                />
+
+                {estimatedPnL !== null && (
+                  <View
+                    className="p-3 rounded-2xl"
+                    style={{ backgroundColor: "rgba(168,199,250,0.08)" }}
+                  >
+                    <Text
+                      className="text-xs"
+                      style={{ color: theme.colors.onSurfaceVariant }}
+                    >
+                      Estimated P&L
+                    </Text>
+                    <Text
+                      className="text-sm font-semibold mt-0.5"
+                      style={{
+                        color:
+                          estimatedPnL >= 0
+                            ? "#6dd58c"
+                            : theme.colors.error,
+                      }}
+                    >
+                      {estimatedPnL >= 0 ? "+" : ""}
+                      {formatCurrency(estimatedPnL)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* FIFO Preview */}
+              {preview.length > 0 && (
+                <View
+                  className="rounded-3xl p-4 gap-1 mb-4"
+                  style={{ backgroundColor: theme.colors.elevation.level1 }}
+                >
+                  <Text
+                    className="text-sm font-medium mb-2"
+                    style={{ color: theme.colors.onSurface }}
+                  >
+                    Lots Affected (FIFO)
+                  </Text>
+                  {preview.map((item, idx) => (
+                    <View
+                      key={item.lot.id}
+                      className="flex-row justify-between items-center py-2"
+                      style={{
+                        borderTopWidth: idx > 0 ? 1 : 0,
+                        borderTopColor: "rgba(255,255,255,0.05)",
+                      }}
+                    >
+                      <View className="flex-1 mr-3">
+                        <Text
+                          className="text-xs font-medium"
+                          style={{ color: theme.colors.onSurface }}
+                        >
+                          {new Date(item.lot.createdAt as any).toLocaleDateString()}
+                        </Text>
+                        <Text
+                          className="text-xs mt-0.5"
+                          style={{ color: theme.colors.onSurfaceVariant }}
+                        >
+                          {[
+                            item.lot.quantity != null
+                              ? `${formatUnits(item.lot.quantity)} units`
+                              : null,
+                            `${formatCurrency(item.lot.investedAmount)} invested`,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </Text>
+                      </View>
+                      <View className="items-end gap-1">
+                        <View
+                          className="px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: item.fullyConsumed
+                              ? "rgba(255,180,171,0.2)"
+                              : "rgba(255,213,79,0.15)",
+                          }}
+                        >
+                          <Text
+                            className="text-xs font-medium"
+                            style={{
+                              color: item.fullyConsumed ? "#ffb4ab" : "#ffd54f",
+                            }}
+                          >
+                            {item.fullyConsumed ? "Fully Sold" : "Partial"}
+                          </Text>
+                        </View>
+                        <Text
+                          className="text-xs"
+                          style={{ color: theme.colors.onSurfaceVariant }}
+                        >
+                          {item.unitsReduced !== undefined
+                            ? `−${formatUnits(item.unitsReduced)} units`
+                            : item.amountReduced !== undefined
+                              ? `−${formatCurrency(item.amountReduced)}`
+                              : ""}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              <Button
+                mode="contained"
+                className="rounded-full py-1"
+                onPress={handleSell}
+                loading={saving}
+                disabled={!hasAtLeastOne || saving}
+              >
+                Record Sale
+              </Button>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        )}
+      </View>
+    </>
+  );
+}

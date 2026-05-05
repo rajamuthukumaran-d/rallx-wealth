@@ -514,7 +514,18 @@ export default function InvestmentsBreakdownScreen() {
                               </TouchableOpacity>
                               <TouchableOpacity
                                 activeOpacity={0.75}
-                                onPress={() => toggleReveal(expandKey)}
+                                onPress={() => {
+                                  toggleReveal(expandKey);
+                                  router.push({
+                                    pathname:
+                                      "/(screens)/(net-worth)/(investments)/sell",
+                                    params: {
+                                      symbol: rep.symbol ?? "",
+                                      name: rep.name,
+                                      investmentType: rep.type,
+                                    },
+                                  });
+                                }}
                                 style={{
                                   flex: 1,
                                   alignItems: "center",
