@@ -198,8 +198,6 @@ export default function InvestmentsBreakdownScreen() {
 
   const typeGroups = groupByType(investments);
 
-  const ACTION_WIDTH = 136;
-
   const getRevealAnim = (key: string) => {
     if (!revealAnimations.current[key]) {
       revealAnimations.current[key] = new Animated.Value(0);
@@ -435,7 +433,13 @@ export default function InvestmentsBreakdownScreen() {
                       (i) => i.currentValue > 0,
                     );
 
+                    const actionWidth = isGrouped ? 136 : 204;
                     const rep = symInvestments[0]; // representative investment for avatar/name
+                    const mostRecent = isGrouped
+                      ? [...symInvestments].sort(
+                          (a, b) => (b.createdAt as number) - (a.createdAt as number),
+                        )[0]
+                      : rep;
                     const totalQty = symInvestments.reduce(
                       (s, i) => s + (i.quantity ?? 0),
                       0,
@@ -466,7 +470,7 @@ export default function InvestmentsBreakdownScreen() {
                               right: 0,
                               top: 0,
                               bottom: 0,
-                              width: ACTION_WIDTH,
+                              width: actionWidth,
                               flexDirection: "row",
                             }}
                           >
@@ -486,7 +490,15 @@ export default function InvestmentsBreakdownScreen() {
                                   router.push({
                                     pathname:
                                       "/(screens)/(net-worth)/(investments)/[id]",
-                                    params: { id: rep.id },
+                                    params: {
+                                      id: "new",
+                                      prefillName: mostRecent.name,
+                                      prefillSymbol: mostRecent.symbol ?? "",
+                                      prefillExchange: mostRecent.exchange ?? "",
+                                      prefillPlatform: mostRecent.platform ?? "",
+                                      prefillCurrency: mostRecent.currency ?? "",
+                                      prefillType: mostRecent.type,
+                                    },
                                   });
                                 }}
                                 style={{
@@ -494,24 +506,59 @@ export default function InvestmentsBreakdownScreen() {
                                   alignItems: "center",
                                   justifyContent: "center",
                                   gap: 4,
-                                  backgroundColor: "rgba(168,199,250,0.18)",
+                                  backgroundColor: "rgba(115,219,145,0.18)",
                                 }}
                               >
                                 <MaterialCommunityIcons
-                                  name="pencil-outline"
+                                  name="plus-circle-outline"
                                   size={18}
-                                  color="#a8c7fa"
+                                  color="#73db91"
                                 />
                                 <Text
                                   style={{
-                                    color: "#a8c7fa",
+                                    color: "#73db91",
                                     fontSize: 11,
                                     fontWeight: "600",
                                   }}
                                 >
-                                  Edit
+                                  Add
                                 </Text>
                               </TouchableOpacity>
+                              {!isGrouped && (
+                                <TouchableOpacity
+                                  activeOpacity={0.75}
+                                  onPress={() => {
+                                    toggleReveal(expandKey);
+                                    router.push({
+                                      pathname:
+                                        "/(screens)/(net-worth)/(investments)/[id]",
+                                      params: { id: rep.id },
+                                    });
+                                  }}
+                                  style={{
+                                    flex: 1,
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: 4,
+                                    backgroundColor: "rgba(168,199,250,0.18)",
+                                  }}
+                                >
+                                  <MaterialCommunityIcons
+                                    name="pencil-outline"
+                                    size={18}
+                                    color="#a8c7fa"
+                                  />
+                                  <Text
+                                    style={{
+                                      color: "#a8c7fa",
+                                      fontSize: 11,
+                                      fontWeight: "600",
+                                    }}
+                                  >
+                                    Edit
+                                  </Text>
+                                </TouchableOpacity>
+                              )}
                               <TouchableOpacity
                                 activeOpacity={0.75}
                                 onPress={() => {
@@ -561,7 +608,7 @@ export default function InvestmentsBreakdownScreen() {
                                     expandKey,
                                   ).interpolate({
                                     inputRange: [0, 1],
-                                    outputRange: [0, -ACTION_WIDTH],
+                                    outputRange: [0, -actionWidth],
                                   }),
                                 },
                               ],
