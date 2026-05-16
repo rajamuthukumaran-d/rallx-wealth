@@ -52,7 +52,23 @@ function mapInstrumentType(instrumentType: string): string {
 export default function InvestmentFormScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const {
+    id,
+    prefillName,
+    prefillSymbol,
+    prefillExchange,
+    prefillPlatform,
+    prefillCurrency,
+    prefillType,
+  } = useLocalSearchParams<{
+    id: string;
+    prefillName?: string;
+    prefillSymbol?: string;
+    prefillExchange?: string;
+    prefillPlatform?: string;
+    prefillCurrency?: string;
+    prefillType?: string;
+  }>();
   const isAdding = id === "new";
 
   const { investment } = useInvestment(isAdding ? "" : id);
@@ -62,14 +78,16 @@ export default function InvestmentFormScreen() {
     null,
   );
 
-  const [name, setName] = useState("");
-  const [investType, setInvestType] = useState("");
+  const [name, setName] = useState(isAdding ? (prefillName ?? "") : "");
+  const [investType, setInvestType] = useState(isAdding ? (prefillType ?? "") : "");
   const [typeMenuVisible, setTypeMenuVisible] = useState(false);
-  const [symbol, setSymbol] = useState("");
-  const [exchange, setExchange] = useState("NSE"); // default to NSE
+  const [symbol, setSymbol] = useState(isAdding ? (prefillSymbol ?? "") : "");
+  const [exchange, setExchange] = useState(
+    isAdding ? (prefillExchange || "NSE") : "NSE",
+  );
   const [exchangeMenuVisible, setExchangeMenuVisible] = useState(false);
-  const [currency, setCurrency] = useState("");
-  const [platform, setPlatform] = useState("");
+  const [currency, setCurrency] = useState(isAdding ? (prefillCurrency ?? "") : "");
+  const [platform, setPlatform] = useState(isAdding ? (prefillPlatform ?? "") : "");
   const [investedAmount, setInvestedAmount] = useState("");
   const [currentValue, setCurrentValue] = useState("");
   const [quantity, setQuantity] = useState("");
