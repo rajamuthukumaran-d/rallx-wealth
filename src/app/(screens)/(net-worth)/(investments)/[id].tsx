@@ -6,6 +6,8 @@ import {
   updateInvestment,
   useInvestment,
 } from "@/data/controllers/useInvestments";
+import { NumberField } from "@/components/NumberField";
+import { formatIndian, parseIndian } from "@/utils/numberFormat";
 import { EXCHANGES, fetchStockQuote } from "@/utils/stockPrice";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -112,12 +114,12 @@ export default function InvestmentFormScreen() {
     setCurrency(investment.currency ?? "");
     setPlatform(investment.platform ?? "");
     setInvestedAmount(
-      investment.investedAmount ? String(investment.investedAmount) : "",
+      investment.investedAmount ? formatIndian(String(investment.investedAmount)) : "",
     );
     setCurrentValue(
-      investment.currentValue ? String(investment.currentValue) : "",
+      investment.currentValue ? formatIndian(String(investment.currentValue)) : "",
     );
-    setQuantity(investment.quantity != null ? String(investment.quantity) : "");
+    setQuantity(investment.quantity != null ? formatIndian(String(investment.quantity)) : "");
     // Derive unit price so quantity changes can update currentValue without a fresh API call
     if (
       investment.quantity &&
@@ -131,25 +133,25 @@ export default function InvestmentFormScreen() {
   // Recalculate invested amount when avg unit value or quantity changes
   const handleAvgUnitValueChange = (val: string) => {
     setAvgUnitValue(val);
-    const avg = parseFloat(val);
-    const qty = parseFloat(quantity);
+    const avg = parseIndian(val);
+    const qty = parseIndian(quantity);
     if (!isNaN(avg) && !isNaN(qty) && qty > 0) {
-      setInvestedAmount(String(avg * qty));
+      setInvestedAmount(formatIndian(String(avg * qty)));
     }
   };
 
   const handleQuantityChange = (val: string) => {
     setQuantity(val);
-    const avg = parseFloat(avgUnitValue);
-    const qty = parseFloat(val);
+    const avg = parseIndian(avgUnitValue);
+    const qty = parseIndian(val);
     if (!isNaN(avg) && avg > 0 && !isNaN(qty) && qty > 0) {
-      setInvestedAmount(String(avg * qty));
+      setInvestedAmount(formatIndian(String(avg * qty)));
     }
     if (currentValueDebounce.current)
       clearTimeout(currentValueDebounce.current);
     if (lastUnitPrice.current !== null && !isNaN(qty) && qty > 0) {
       currentValueDebounce.current = setTimeout(() => {
-        setCurrentValue(String(lastUnitPrice.current! * qty));
+        setCurrentValue(formatIndian(String(lastUnitPrice.current! * qty)));
       }, 500);
     }
   };
@@ -175,9 +177,9 @@ export default function InvestmentFormScreen() {
     try {
       const quote = await fetchStockQuote(symbol.trim(), exchange);
       lastUnitPrice.current = quote.price;
-      const qty = parseFloat(quantity) || null;
+      const qty = parseIndian(quantity) || null;
       const marketValue = qty != null ? quote.price * qty : quote.price;
-      setCurrentValue(String(marketValue));
+      setCurrentValue(formatIndian(String(marketValue)));
       setCurrency(quote.currency);
       setFetchedMeta({ name: quote.name, currency: quote.currency });
       if (!name.trim()) setName(quote.name);
@@ -197,9 +199,9 @@ export default function InvestmentFormScreen() {
     exchange: exchange || undefined,
     currency: currency || undefined,
     platform: platform.trim() || undefined,
-    investedAmount: parseFloat(investedAmount) || 0,
-    currentValue: parseFloat(currentValue) || 0,
-    quantity: quantity ? parseFloat(quantity) : undefined,
+    investedAmount: parseIndian(investedAmount),
+    currentValue: parseIndian(currentValue),
+    quantity: quantity ? parseIndian(quantity) : undefined,
   });
 
   const handleSave = async () => {
@@ -448,33 +450,27 @@ export default function InvestmentFormScreen() {
               Valuation
             </Text>
 
-            <TextInput
+            <NumberField
               label="Quantity / Units"
               value={quantity}
               onChangeText={handleQuantityChange}
-              mode="outlined"
-              keyboardType="decimal-pad"
               style={inputStyle}
             />
 
             <View className="flex-row gap-3">
               <View className="flex-1">
-                <TextInput
+                <NumberField
                   label="Avg. Unit Value"
                   value={avgUnitValue}
                   onChangeText={handleAvgUnitValueChange}
-                  mode="outlined"
-                  keyboardType="decimal-pad"
                   style={inputStyle}
                 />
               </View>
               <View className="flex-1">
-                <TextInput
+                <NumberField
                   label="Amount Invested"
                   value={investedAmount}
                   onChangeText={handleInvestedAmountChange}
-                  mode="outlined"
-                  keyboardType="decimal-pad"
                   style={inputStyle}
                 />
               </View>
@@ -484,12 +480,10 @@ export default function InvestmentFormScreen() {
               Set Avg. Unit Value + Quantity to auto-calculate Amount Invested
             </HelperText>
 
-            <TextInput
+            <NumberField
               label="Current Value"
               value={currentValue}
               onChangeText={setCurrentValue}
-              mode="outlined"
-              keyboardType="decimal-pad"
               style={inputStyle}
             />
           </View>

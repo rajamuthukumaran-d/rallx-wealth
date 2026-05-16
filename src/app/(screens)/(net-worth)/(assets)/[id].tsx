@@ -1,3 +1,4 @@
+import { NumberField } from "@/components/NumberField";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import {
   AssetFormData,
@@ -6,6 +7,7 @@ import {
   updateAsset,
   useAsset,
 } from "@/data/controllers/useAssets";
+import { formatIndian, parseIndian } from "@/utils/numberFormat";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -60,11 +62,11 @@ export default function AssetFormScreen() {
     formPopulated.current = true;
     setName(asset.name);
     setAssetType(asset.type);
-    setBalance(asset.balance ? String(asset.balance) : "");
-    setMinBalance(asset.minBalance ? String(asset.minBalance) : "");
+    setBalance(asset.balance ? formatIndian(String(asset.balance)) : "");
+    setMinBalance(asset.minBalance ? formatIndian(String(asset.minBalance)) : "");
     setIncludeInBal(asset.includeInBal);
     if (asset.maturityDate) setMaturityDate(new Date(asset.maturityDate));
-    if (asset.interestRate) setInterestRate(String(asset.interestRate));
+    if (asset.interestRate) setInterestRate(formatIndian(String(asset.interestRate)));
   }, [asset]);
 
   const selectedTypeLabel =
@@ -85,11 +87,11 @@ export default function AssetFormScreen() {
   const formData = (): AssetFormData => ({
     name: name.trim(),
     type: assetType,
-    balance: parseFloat(balance) || 0,
-    minBalance: parseFloat(minBalance) || 0,
+    balance: parseIndian(balance),
+    minBalance: parseIndian(minBalance),
     includeInBal,
     maturityDate: maturityDate ? maturityDate.getTime() : undefined,
-    interestRate: interestRate ? parseFloat(interestRate) : undefined,
+    interestRate: interestRate ? parseIndian(interestRate) : undefined,
   });
 
   const handleSave = async () => {
@@ -228,24 +230,20 @@ export default function AssetFormScreen() {
 
             <View className="flex-row gap-3">
               <View className="flex-1">
-                <TextInput
+                <NumberField
                   label="Current Balance"
                   value={balance}
                   onChangeText={setBalance}
-                  mode="outlined"
-                  keyboardType="decimal-pad"
-                  left={<TextInput.Affix text="₹" />}
+                  prefix="₹"
                   style={inputStyle}
                 />
               </View>
               <View className="flex-1">
-                <TextInput
+                <NumberField
                   label="Minimum Balance"
                   value={minBalance}
                   onChangeText={setMinBalance}
-                  mode="outlined"
-                  keyboardType="decimal-pad"
-                  left={<TextInput.Affix text="₹" />}
+                  prefix="₹"
                   style={inputStyle}
                 />
               </View>
@@ -306,13 +304,11 @@ export default function AssetFormScreen() {
                 </TouchableOpacity>
               </View>
               <View className="flex-1">
-                <TextInput
+                <NumberField
                   label="Interest Rate (APY)"
                   value={interestRate}
                   onChangeText={setInterestRate}
-                  mode="outlined"
-                  keyboardType="decimal-pad"
-                  right={<TextInput.Affix text="%" />}
+                  suffix="%"
                   style={inputStyle}
                 />
               </View>
