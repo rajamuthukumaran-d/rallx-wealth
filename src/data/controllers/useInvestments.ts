@@ -122,6 +122,104 @@ export async function deleteInvestment(investment: Investment): Promise<void> {
   });
 }
 
+export function useInvestmentGroup(symbol?: string, name?: string) {
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!symbol && !name) {
+      setIsLoading(false);
+      return;
+    }
+
+    const collection = database.get<Investment>("investments");
+    const query = symbol
+      ? collection.query(Q.where("is_deleted", false), Q.where("symbol", symbol))
+      : collection.query(Q.where("is_deleted", false), Q.where("name", name!));
+
+    const subscription = query
+      .observeWithColumns(["invested_amount", "current_value", "quantity", "is_deleted", "created_at"])
+      .subscribe((data) => {
+        const sorted = [...data].sort(
+          (a, b) => new Date(a.createdAt as any).getTime() - new Date(b.createdAt as any).getTime(),
+        );
+        setInvestments(sorted);
+        setIsLoading(false);
+      });
+
+    return () => subscription.unsubscribe();
+  }, [symbol, name]);
+
+  return { investments, isLoading };
+}
+
+export interface SellInvestmentData {
+  symbol?: string;
+  name: string;
+  unitsSold?: number;
+  soldAmount?: number;
+}
+
+export async function sellInvestment(data: SellInvestmentData): Promise<void> {
+  const { symbol, name, unitsSold, soldAmount } = data;
+
+  const collection = database.get<Investment>("investments");
+  const lots = await (symbol
+    ? collection.query(Q.where("is_deleted", false), Q.where("symbol", symbol))
+    : collection.query(Q.where("is_deleted", false), Q.where("name", name))
+  ).fetch();
+
+  lots.sort(
+    (a, b) => new Date(a.createdAt as any).getTime() - new Date(b.createdAt as any).getTime(),
+  );
+
+  if (lots.length === 0) return;
+
+  await database.write(async () => {
+    if (unitsSold !== undefined && unitsSold > 0) {
+      let remaining = unitsSold;
+      for (const lot of lots) {
+        if (remaining <= 0) break;
+        const qty = lot.quantity ?? 0;
+        if (qty <= 0) continue;
+
+        if (qty <= remaining) {
+          remaining -= qty;
+          await lot.update((r) => { r.isDeleted = true; });
+        } else {
+          const proportion = remaining / qty;
+          const newQty = qty - remaining;
+          remaining = 0;
+          await lot.update((r) => {
+            r.quantity = newQty as any;
+            r.investedAmount = lot.investedAmount * (1 - proportion);
+            r.currentValue = lot.currentValue * (1 - proportion);
+          });
+        }
+      }
+    } else if (soldAmount !== undefined && soldAmount > 0) {
+      let remaining = soldAmount;
+      for (const lot of lots) {
+        if (remaining <= 0) break;
+
+        if (lot.investedAmount <= remaining) {
+          remaining -= lot.investedAmount;
+          await lot.update((r) => { r.isDeleted = true; });
+        } else {
+          const proportion = remaining / lot.investedAmount;
+          const newInvestedAmount = lot.investedAmount - remaining;
+          remaining = 0;
+          await lot.update((r) => {
+            r.investedAmount = newInvestedAmount;
+            r.currentValue = lot.currentValue * (1 - proportion);
+            if (lot.quantity != null) r.quantity = (lot.quantity * (1 - proportion)) as any;
+          });
+        }
+      }
+    }
+  });
+}
+
 // Fetches live prices for all investments that have a symbol + exchange and updates currentValue.
 // Runs all fetches concurrently; silently skips any that fail (e.g. bad symbol, offline).
 export async function refreshInvestmentPrices(investments: Investment[]): Promise<void> {
