@@ -1,6 +1,7 @@
 // src/components/NetWorth/Investments/FifoLotRow.tsx
 import Investment from '@/data/models/Investment';
 import { formatCurrency } from '@/utils/currency';
+import { formatUnits } from '@/utils/investment';
 import { View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 
@@ -10,10 +11,6 @@ export type FifoLotPreview = {
   amountReduced?: number;
   fullyConsumed: boolean;
 };
-
-function formatUnits(qty: number) {
-  return qty % 1 === 0 ? qty.toFixed(0) : qty.toFixed(4);
-}
 
 type FifoLotRowProps = {
   item: FifoLotPreview;

@@ -9,6 +9,7 @@ import {
 } from '@/data/controllers/useInvestments';
 import Investment from '@/data/models/Investment';
 import { formatCurrency, getCurrencySymbol } from '@/utils/currency';
+import { formatUnits } from '@/utils/investment';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
@@ -50,10 +51,6 @@ function computeFifoPreview(
   }
 
   return result;
-}
-
-function formatUnits(qty: number) {
-  return qty % 1 === 0 ? qty.toFixed(0) : qty.toFixed(4);
 }
 
 export default function SellInvestmentScreen() {

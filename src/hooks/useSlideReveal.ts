@@ -41,5 +41,5 @@ export function useSlideReveal() {
     }
   };
 
-  return { revealedKey, getRevealAnim, toggleReveal };
+  return { getRevealAnim, toggleReveal };
 }
