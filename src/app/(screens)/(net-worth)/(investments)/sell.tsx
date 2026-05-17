@@ -5,7 +5,7 @@ import {
   useInvestmentGroup,
 } from "@/data/controllers/useInvestments";
 import Investment from "@/data/models/Investment";
-import { formatCurrency } from "@/utils/currency";
+import { formatCurrency, getCurrencySymbol } from "@/utils/currency";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
@@ -99,6 +99,9 @@ export default function SellInvestmentScreen() {
   const totalUnits = lots.reduce((sum, l) => sum + (l.quantity ?? 0), 0);
   const totalInvested = lots.reduce((sum, l) => sum + l.investedAmount, 0);
   const totalCurrentValue = lots.reduce((sum, l) => sum + (l.currentValue ?? 0), 0);
+
+  const lotCurrency = lots[0]?.currency ?? "INR";
+  const currencySymbol = getCurrencySymbol(lotCurrency);
 
   const preview = useMemo(
     () => computeFifoPreview(lots, unitsSold, soldAmount),
@@ -212,7 +215,7 @@ export default function SellInvestmentScreen() {
                       className="text-sm font-medium"
                       style={{ color: theme.colors.onSurface }}
                     >
-                      {formatCurrency(totalInvested)}
+                      {formatCurrency(totalInvested, currencySymbol)}
                     </Text>
                   </View>
                   {totalCurrentValue > 0 && (
@@ -227,7 +230,7 @@ export default function SellInvestmentScreen() {
                         className="text-sm font-medium"
                         style={{ color: theme.colors.onSurface }}
                       >
-                        {formatCurrency(totalCurrentValue)}
+                        {formatCurrency(totalCurrentValue, currencySymbol)}
                       </Text>
                     </View>
                   )}
@@ -300,7 +303,7 @@ export default function SellInvestmentScreen() {
                       }}
                     >
                       {estimatedPnL >= 0 ? "+" : ""}
-                      {formatCurrency(estimatedPnL)}
+                      {formatCurrency(estimatedPnL, currencySymbol)}
                     </Text>
                   </View>
                 )}
@@ -342,7 +345,7 @@ export default function SellInvestmentScreen() {
                             item.lot.quantity != null
                               ? `${formatUnits(item.lot.quantity)} units`
                               : null,
-                            `${formatCurrency(item.lot.investedAmount)} invested`,
+                            `${formatCurrency(item.lot.investedAmount, currencySymbol)} invested`,
                           ]
                             .filter(Boolean)
                             .join(" · ")}
@@ -373,7 +376,7 @@ export default function SellInvestmentScreen() {
                           {item.unitsReduced !== undefined
                             ? `−${formatUnits(item.unitsReduced)} units`
                             : item.amountReduced !== undefined
-                              ? `−${formatCurrency(item.amountReduced)}`
+                              ? `−${formatCurrency(item.amountReduced, currencySymbol)}`
                               : ""}
                         </Text>
                       </View>
