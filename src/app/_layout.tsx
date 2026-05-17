@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { useColorScheme } from "react-native";
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 import "../../global.css";
+import { ExchangeRateProvider } from "../context/ExchangeRateContext";
 import { seedDefaultCategories } from "../data/seed";
 
 export default function RootLayout() {
@@ -62,13 +63,15 @@ export default function RootLayout() {
   };
 
   return (
-    <PaperProvider theme={isDark ? paperDark : paperLight}>
-      <ThemeProvider value={isDark ? navDark : navLight}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-        </Stack>
-      </ThemeProvider>
-    </PaperProvider>
+    <ExchangeRateProvider>
+      <PaperProvider theme={isDark ? paperDark : paperLight}>
+        <ThemeProvider value={isDark ? navDark : navLight}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+          </Stack>
+        </ThemeProvider>
+      </PaperProvider>
+    </ExchangeRateProvider>
   );
 }

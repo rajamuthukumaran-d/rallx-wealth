@@ -4,7 +4,7 @@ import {
   useInvestments,
 } from "@/data/controllers/useInvestments";
 import Investment from "@/data/models/Investment";
-import { useUsdToInr } from "@/hooks/useExchangeRate";
+import { useExchangeRate } from "@/context/ExchangeRateContext";
 import { formatCurrency, formatFullCurrency } from "@/utils/currency";
 import { convertToInr } from "@/utils/stockPrice";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -138,7 +138,7 @@ export default function InvestmentsBreakdownScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { investments, isLoading } = useInvestments();
-  const { rate: usdToInr } = useUsdToInr();
+  const { usdToInr } = useExchangeRate();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
