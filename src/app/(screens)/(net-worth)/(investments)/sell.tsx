@@ -1,33 +1,18 @@
-import { ScreenHeader } from "@/components/ScreenHeader";
+// src/app/(screens)/(net-worth)/(investments)/sell.tsx
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { FifoLotRow, FifoLotPreview } from '@/components/NetWorth/Investments/FifoLotRow';
+import { SectionCard } from '@/components/SectionCard';
 import {
   SellInvestmentData,
   sellInvestment,
   useInvestmentGroup,
-} from "@/data/controllers/useInvestments";
-import Investment from "@/data/models/Investment";
-import { formatCurrency, getCurrencySymbol } from "@/utils/currency";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-} from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  Text,
-  TextInput,
-  useTheme,
-} from "react-native-paper";
-
-type FifoLotPreview = {
-  lot: Investment;
-  unitsReduced?: number;
-  amountReduced?: number;
-  fullyConsumed: boolean;
-};
+} from '@/data/controllers/useInvestments';
+import Investment from '@/data/models/Investment';
+import { formatCurrency, getCurrencySymbol } from '@/utils/currency';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Button, Text, TextInput, useTheme } from 'react-native-paper';
 
 function computeFifoPreview(
   lots: Investment[],
@@ -80,13 +65,10 @@ export default function SellInvestmentScreen() {
     investmentType: string;
   }>();
 
-  const { investments: lots, isLoading } = useInvestmentGroup(
-    symbol || undefined,
-    name,
-  );
+  const { investments: lots, isLoading } = useInvestmentGroup(symbol || undefined, name);
 
-  const [unitsSoldStr, setUnitsSoldStr] = useState("");
-  const [soldAmountStr, setSoldAmountStr] = useState("");
+  const [unitsSoldStr, setUnitsSoldStr] = useState('');
+  const [soldAmountStr, setSoldAmountStr] = useState('');
   const [saving, setSaving] = useState(false);
 
   const unitsSold = unitsSoldStr ? parseFloat(unitsSoldStr) : undefined;
@@ -100,7 +82,7 @@ export default function SellInvestmentScreen() {
   const totalInvested = lots.reduce((sum, l) => sum + l.investedAmount, 0);
   const totalCurrentValue = lots.reduce((sum, l) => sum + (l.currentValue ?? 0), 0);
 
-  const lotCurrency = lots[0]?.currency ?? "INR";
+  const lotCurrency = lots[0]?.currency ?? 'INR';
   const currencySymbol = getCurrencySymbol(lotCurrency);
 
   const preview = useMemo(
@@ -110,11 +92,7 @@ export default function SellInvestmentScreen() {
   );
 
   const estimatedPnL = useMemo(() => {
-    if (
-      soldAmount && soldAmount > 0 &&
-      unitsSold && unitsSold > 0 &&
-      totalUnits > 0 && totalInvested > 0
-    ) {
+    if (soldAmount && soldAmount > 0 && unitsSold && unitsSold > 0 && totalUnits > 0 && totalInvested > 0) {
       const costBasis = (unitsSold / totalUnits) * totalInvested;
       return soldAmount - costBasis;
     }
@@ -141,8 +119,8 @@ export default function SellInvestmentScreen() {
 
   const displayName = symbol ? `${name} (${symbol})` : name;
   const typeLabel = investmentType
-    ? investmentType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-    : "";
+    ? investmentType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+    : '';
 
   return (
     <>
@@ -156,7 +134,7 @@ export default function SellInvestmentScreen() {
           </View>
         ) : (
           <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             className="flex-1"
           >
             <ScrollView
@@ -164,23 +142,14 @@ export default function SellInvestmentScreen() {
               keyboardShouldPersistTaps="handled"
             >
               {/* Investment Summary */}
-              <View
-                className="rounded-3xl p-4 gap-3 mb-4"
-                style={{ backgroundColor: theme.colors.elevation.level1 }}
-              >
+              <SectionCard className="gap-3 mb-4">
                 <View className="flex-row items-center gap-2 flex-wrap">
-                  <Text
-                    className="text-base font-semibold"
-                    style={{ color: theme.colors.onSurface }}
-                  >
+                  <Text className="text-base font-semibold" style={{ color: theme.colors.onSurface }}>
                     {displayName}
                   </Text>
                   {typeLabel ? (
-                    <View
-                      className="px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: "rgba(168,199,250,0.15)" }}
-                    >
-                      <Text className="text-xs" style={{ color: "#a8c7fa" }}>
+                    <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(168,199,250,0.15)' }}>
+                      <Text className="text-xs" style={{ color: '#a8c7fa' }}>
                         {typeLabel}
                       </Text>
                     </View>
@@ -190,78 +159,47 @@ export default function SellInvestmentScreen() {
                 <View className="flex-row gap-6">
                   {totalUnits > 0 && (
                     <View>
-                      <Text
-                        className="text-xs"
-                        style={{ color: theme.colors.onSurfaceVariant }}
-                      >
+                      <Text className="text-xs" style={{ color: theme.colors.onSurfaceVariant }}>
                         Total Units
                       </Text>
-                      <Text
-                        className="text-sm font-medium"
-                        style={{ color: theme.colors.onSurface }}
-                      >
+                      <Text className="text-sm font-medium" style={{ color: theme.colors.onSurface }}>
                         {formatUnits(totalUnits)}
                       </Text>
                     </View>
                   )}
                   <View>
-                    <Text
-                      className="text-xs"
-                      style={{ color: theme.colors.onSurfaceVariant }}
-                    >
+                    <Text className="text-xs" style={{ color: theme.colors.onSurfaceVariant }}>
                       Invested
                     </Text>
-                    <Text
-                      className="text-sm font-medium"
-                      style={{ color: theme.colors.onSurface }}
-                    >
+                    <Text className="text-sm font-medium" style={{ color: theme.colors.onSurface }}>
                       {formatCurrency(totalInvested, currencySymbol)}
                     </Text>
                   </View>
                   {totalCurrentValue > 0 && (
                     <View>
-                      <Text
-                        className="text-xs"
-                        style={{ color: theme.colors.onSurfaceVariant }}
-                      >
+                      <Text className="text-xs" style={{ color: theme.colors.onSurfaceVariant }}>
                         Current
                       </Text>
-                      <Text
-                        className="text-sm font-medium"
-                        style={{ color: theme.colors.onSurface }}
-                      >
+                      <Text className="text-sm font-medium" style={{ color: theme.colors.onSurface }}>
                         {formatCurrency(totalCurrentValue, currencySymbol)}
                       </Text>
                     </View>
                   )}
                 </View>
 
-                <Text
-                  className="text-xs"
-                  style={{ color: theme.colors.onSurfaceVariant }}
-                >
-                  {lots.length} lot{lots.length !== 1 ? "s" : ""} held · FIFO order
+                <Text className="text-xs" style={{ color: theme.colors.onSurfaceVariant }}>
+                  {lots.length} lot{lots.length !== 1 ? 's' : ''} held · FIFO order
                 </Text>
-              </View>
+              </SectionCard>
 
               {/* Sale Details */}
-              <View
-                className="rounded-3xl p-4 gap-3 mb-4"
-                style={{ backgroundColor: theme.colors.elevation.level1 }}
-              >
-                <Text
-                  className="text-sm font-medium"
-                  style={{ color: theme.colors.onSurface }}
-                >
+              <SectionCard className="gap-3 mb-4">
+                <Text className="text-sm font-medium" style={{ color: theme.colors.onSurface }}>
                   Sale Details
                 </Text>
-                <Text
-                  className="text-xs mb-1"
-                  style={{ color: theme.colors.onSurfaceVariant }}
-                >
+                <Text className="text-xs mb-1" style={{ color: theme.colors.onSurfaceVariant }}>
                   Enter units sold, amount received, or both. At least one is required.
                 </Text>
-
                 <TextInput
                   label="Units Sold"
                   value={unitsSoldStr}
@@ -271,7 +209,6 @@ export default function SellInvestmentScreen() {
                   style={{ backgroundColor: theme.colors.elevation.level2 }}
                   right={<TextInput.Affix text="units" />}
                 />
-
                 <TextInput
                   label="Amount Received"
                   value={soldAmountStr}
@@ -281,108 +218,37 @@ export default function SellInvestmentScreen() {
                   style={{ backgroundColor: theme.colors.elevation.level2 }}
                   left={<TextInput.Affix text="₹" />}
                 />
-
                 {estimatedPnL !== null && (
-                  <View
-                    className="p-3 rounded-2xl"
-                    style={{ backgroundColor: "rgba(168,199,250,0.08)" }}
-                  >
-                    <Text
-                      className="text-xs"
-                      style={{ color: theme.colors.onSurfaceVariant }}
-                    >
+                  <View className="p-3 rounded-2xl" style={{ backgroundColor: 'rgba(168,199,250,0.08)' }}>
+                    <Text className="text-xs" style={{ color: theme.colors.onSurfaceVariant }}>
                       Estimated P&L
                     </Text>
                     <Text
                       className="text-sm font-semibold mt-0.5"
-                      style={{
-                        color:
-                          estimatedPnL >= 0
-                            ? "#6dd58c"
-                            : theme.colors.error,
-                      }}
+                      style={{ color: estimatedPnL >= 0 ? '#6dd58c' : theme.colors.error }}
                     >
-                      {estimatedPnL >= 0 ? "+" : ""}
+                      {estimatedPnL >= 0 ? '+' : ''}
                       {formatCurrency(estimatedPnL, currencySymbol)}
                     </Text>
                   </View>
                 )}
-              </View>
+              </SectionCard>
 
               {/* FIFO Preview */}
               {preview.length > 0 && (
-                <View
-                  className="rounded-3xl p-4 gap-1 mb-4"
-                  style={{ backgroundColor: theme.colors.elevation.level1 }}
-                >
-                  <Text
-                    className="text-sm font-medium mb-2"
-                    style={{ color: theme.colors.onSurface }}
-                  >
+                <SectionCard className="gap-1 mb-4">
+                  <Text className="text-sm font-medium mb-2" style={{ color: theme.colors.onSurface }}>
                     Lots Affected (FIFO)
                   </Text>
                   {preview.map((item, idx) => (
-                    <View
+                    <FifoLotRow
                       key={item.lot.id}
-                      className="flex-row justify-between items-center py-2"
-                      style={{
-                        borderTopWidth: idx > 0 ? 1 : 0,
-                        borderTopColor: "rgba(255,255,255,0.05)",
-                      }}
-                    >
-                      <View className="flex-1 mr-3">
-                        <Text
-                          className="text-xs font-medium"
-                          style={{ color: theme.colors.onSurface }}
-                        >
-                          {new Date(item.lot.createdAt as any).toLocaleDateString()}
-                        </Text>
-                        <Text
-                          className="text-xs mt-0.5"
-                          style={{ color: theme.colors.onSurfaceVariant }}
-                        >
-                          {[
-                            item.lot.quantity != null
-                              ? `${formatUnits(item.lot.quantity)} units`
-                              : null,
-                            `${formatCurrency(item.lot.investedAmount, currencySymbol)} invested`,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </Text>
-                      </View>
-                      <View className="items-end gap-1">
-                        <View
-                          className="px-2 py-0.5 rounded-full"
-                          style={{
-                            backgroundColor: item.fullyConsumed
-                              ? "rgba(255,180,171,0.2)"
-                              : "rgba(255,213,79,0.15)",
-                          }}
-                        >
-                          <Text
-                            className="text-xs font-medium"
-                            style={{
-                              color: item.fullyConsumed ? "#ffb4ab" : "#ffd54f",
-                            }}
-                          >
-                            {item.fullyConsumed ? "Fully Sold" : "Partial"}
-                          </Text>
-                        </View>
-                        <Text
-                          className="text-xs"
-                          style={{ color: theme.colors.onSurfaceVariant }}
-                        >
-                          {item.unitsReduced !== undefined
-                            ? `−${formatUnits(item.unitsReduced)} units`
-                            : item.amountReduced !== undefined
-                              ? `−${formatCurrency(item.amountReduced, currencySymbol)}`
-                              : ""}
-                        </Text>
-                      </View>
-                    </View>
+                      item={item}
+                      isFirst={idx === 0}
+                      currencySymbol={currencySymbol}
+                    />
                   ))}
-                </View>
+                </SectionCard>
               )}
 
               <Button
