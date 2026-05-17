@@ -1,6 +1,7 @@
 // src/components/NetWorth/Investments/SymbolRow.tsx
 import Investment from '@/data/models/Investment';
 import { formatCurrency } from '@/utils/currency';
+import { effectiveCurrentValue } from '@/utils/investment';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Animated, TouchableOpacity, View } from 'react-native';
@@ -18,10 +19,6 @@ type SymbolRowProps = {
   onToggleExpand: () => void;
   toInr: (amount: number, currency?: string) => number;
 };
-
-function effectiveCurrentValue(inv: Investment): number {
-  return inv.currentValue > 0 ? inv.currentValue : inv.investedAmount;
-}
 
 function getInitials(name: string): string {
   return name

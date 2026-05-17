@@ -1,3 +1,4 @@
+// src/components/SectionCard.tsx
 import { ReactNode } from 'react';
 import { View, ViewStyle } from 'react-native';
 import { useTheme } from 'react-native-paper';

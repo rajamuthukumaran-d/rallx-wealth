@@ -1,6 +1,7 @@
 // src/components/NetWorth/Investments/PurchaseRow.tsx
 import Investment from '@/data/models/Investment';
 import { formatCurrency } from '@/utils/currency';
+import { effectiveCurrentValue } from '@/utils/investment';
 import { useRouter } from 'expo-router';
 import { TouchableOpacity, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
@@ -10,10 +11,6 @@ type PurchaseRowProps = {
   isFirst: boolean;
   toInr: (amount: number, currency?: string) => number;
 };
-
-function effectiveCurrentValue(inv: Investment): number {
-  return inv.currentValue > 0 ? inv.currentValue : inv.investedAmount;
-}
 
 export function PurchaseRow({ investment: inv, isFirst, toInr }: PurchaseRowProps) {
   const theme = useTheme();
@@ -46,8 +43,8 @@ export function PurchaseRow({ investment: inv, isFirst, toInr }: PurchaseRowProp
         <Text className="text-xs mt-0.5" style={{ color: theme.colors.onSurfaceVariant }}>
           {[
             inv.quantity != null ? `Qty: ${inv.quantity}` : null,
-            inv.investedAmount
-              ? `Invested: ${formatCurrency(toInr(inv.investedAmount, inv.currency))}`
+            invested > 0
+              ? `Invested: ${formatCurrency(invested)}`
               : null,
           ]
             .filter(Boolean)
