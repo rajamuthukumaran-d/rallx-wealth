@@ -8,7 +8,7 @@ import { useAssets } from "@/data/controllers/useAssets";
 import { useDebts } from "@/data/controllers/useDebts";
 import { useInvestments } from "@/data/controllers/useInvestments";
 import { useNetWorth } from "@/data/controllers/useNetWorth";
-import { useUsdToInr } from "@/hooks/useExchangeRate";
+import { useExchangeRate } from "@/context/ExchangeRateContext";
 import { formatCurrency } from "@/utils/currency";
 import { getUniqueTypes } from "@/utils/string";
 import { convertToInr } from "@/utils/stockPrice";
@@ -22,7 +22,7 @@ export default function NetWorthScreen() {
   const { investments } = useInvestments();
   const { debts } = useDebts();
   const { totalAssets, totalDebts, recentUpdates, isLoading } = useNetWorth();
-  const { rate: usdToInr } = useUsdToInr();
+  const { usdToInr } = useExchangeRate();
 
   const fx = usdToInr ?? 84;
   const totalInvestments = investments.reduce(

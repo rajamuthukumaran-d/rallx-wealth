@@ -1,5 +1,7 @@
+import { NumberField } from "@/components/NumberField";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useAssets } from "@/data/controllers/useAssets";
+import { formatIndian, parseIndian } from "@/utils/numberFormat";
 import {
   createDebt,
   deleteDebt,
@@ -68,14 +70,14 @@ export default function DebtFormScreen() {
     setName(debt.name);
     setDebtType(debt.type);
     setStatus(debt.status === "active" ? "active" : "closed");
-    setTotalAmount(debt.totalAmount ? String(debt.totalAmount) : "");
+    setTotalAmount(debt.totalAmount ? formatIndian(String(debt.totalAmount)) : "");
     setRemainingAmount(
-      debt.remainingAmount ? String(debt.remainingAmount) : "",
+      debt.remainingAmount ? formatIndian(String(debt.remainingAmount)) : "",
     );
-    setEmiAmount(debt.emiAmount ? String(debt.emiAmount) : "");
-    setInterestRate(debt.interestRate != null ? String(debt.interestRate) : "");
+    setEmiAmount(debt.emiAmount ? formatIndian(String(debt.emiAmount)) : "");
+    setInterestRate(debt.interestRate != null ? formatIndian(String(debt.interestRate)) : "");
     setRewardPoints(
-      debt.defaultRewardPoints != null ? String(debt.defaultRewardPoints) : "",
+      debt.defaultRewardPoints != null ? formatIndian(String(debt.defaultRewardPoints)) : "",
     );
     setRoundOff((debt.roundOffAmount ?? 0) > 0);
     if (debt.dueDate) setDueDate(new Date(debt.dueDate));
@@ -105,16 +107,16 @@ export default function DebtFormScreen() {
     name: name.trim(),
     type: debtType,
     status,
-    totalAmount: parseFloat(totalAmount) || 0,
+    totalAmount: parseIndian(totalAmount),
     remainingAmount: remainingAmount
-      ? parseFloat(remainingAmount)
+      ? parseIndian(remainingAmount)
       : debtType === "loan" || debtType === "emi"
-        ? parseFloat(totalAmount) || 0
+        ? parseIndian(totalAmount)
         : 0,
     autoDebit,
-    emiAmount: emiAmount ? parseFloat(emiAmount) : undefined,
-    interestRate: interestRate ? parseFloat(interestRate) : undefined,
-    defaultRewardPoints: rewardPoints ? parseFloat(rewardPoints) : undefined,
+    emiAmount: emiAmount ? parseIndian(emiAmount) : undefined,
+    interestRate: interestRate ? parseIndian(interestRate) : undefined,
+    defaultRewardPoints: rewardPoints ? parseIndian(rewardPoints) : undefined,
     roundOffAmount: roundOff ? 1 : undefined,
     dueDate: dueDate ? dueDate.getTime() : undefined,
   });
@@ -255,24 +257,20 @@ export default function DebtFormScreen() {
 
             <View className="flex-row gap-3">
               <View className="flex-1">
-                <TextInput
+                <NumberField
                   label="Total / Principal"
                   value={totalAmount}
                   onChangeText={setTotalAmount}
-                  mode="outlined"
-                  keyboardType="decimal-pad"
-                  left={<TextInput.Affix text="₹" />}
+                  prefix="₹"
                   style={inputStyle}
                 />
               </View>
               <View className="flex-1">
-                <TextInput
+                <NumberField
                   label="Balance (Optional)"
                   value={remainingAmount}
                   onChangeText={setRemainingAmount}
-                  mode="outlined"
-                  keyboardType="decimal-pad"
-                  left={<TextInput.Affix text="₹" />}
+                  prefix="₹"
                   style={inputStyle}
                 />
               </View>
@@ -290,24 +288,20 @@ export default function DebtFormScreen() {
 
             <View className="flex-row gap-3">
               <View className="flex-1">
-                <TextInput
+                <NumberField
                   label="EMI / Monthly Payment"
                   value={emiAmount}
                   onChangeText={setEmiAmount}
-                  mode="outlined"
-                  keyboardType="decimal-pad"
-                  left={<TextInput.Affix text="₹" />}
+                  prefix="₹"
                   style={inputStyle}
                 />
               </View>
               <View className="flex-1">
-                <TextInput
+                <NumberField
                   label="Interest Rate (APR)"
                   value={interestRate}
                   onChangeText={setInterestRate}
-                  mode="outlined"
-                  keyboardType="decimal-pad"
-                  right={<TextInput.Affix text="%" />}
+                  suffix="%"
                   style={inputStyle}
                 />
               </View>
@@ -353,12 +347,10 @@ export default function DebtFormScreen() {
               Rewards
             </Text>
 
-            <TextInput
+            <NumberField
               label="Reward Points"
               value={rewardPoints}
               onChangeText={setRewardPoints}
-              mode="outlined"
-              keyboardType="decimal-pad"
               style={inputStyle}
             />
 
