@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 2,
+  version: 3,
   tables: [
     tableSchema({
       name: "categories",
@@ -24,6 +24,7 @@ export const schema = appSchema({
         { name: "interest_rate", type: "number", isOptional: true },
         { name: "include_in_bal", type: "boolean" },
         { name: "maturity_date", type: "number", isOptional: true },
+        { name: "currency", type: "string", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
         { name: "is_deleted", type: "boolean" },
@@ -61,6 +62,7 @@ export const schema = appSchema({
         { name: "default_reward_points", type: "number", isOptional: true },
         { name: "round_off_amount", type: "number", isOptional: true },
         { name: "status", type: "string" },
+        { name: "currency", type: "string", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
         { name: "is_deleted", type: "boolean" },

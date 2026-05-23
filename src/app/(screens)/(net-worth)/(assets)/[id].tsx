@@ -1,5 +1,7 @@
+import { CurrencyPickerField } from "@/components/CurrencyPickerField";
 import { NumberField } from "@/components/NumberField";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { DEFAULT_CURRENCY } from "@/data/constants";
 import {
   AssetFormData,
   createAsset,
@@ -53,6 +55,7 @@ export default function AssetFormScreen() {
   const [maturityDate, setMaturityDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [interestRate, setInterestRate] = useState("");
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [saving, setSaving] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -67,6 +70,7 @@ export default function AssetFormScreen() {
     setIncludeInBal(asset.includeInBal);
     if (asset.maturityDate) setMaturityDate(new Date(asset.maturityDate));
     if (asset.interestRate) setInterestRate(formatIndian(String(asset.interestRate)));
+    setCurrency(asset.currency || DEFAULT_CURRENCY);
   }, [asset]);
 
   const selectedTypeLabel =
@@ -87,6 +91,7 @@ export default function AssetFormScreen() {
   const formData = (): AssetFormData => ({
     name: name.trim(),
     type: assetType,
+    currency,
     balance: parseIndian(balance),
     minBalance: parseIndian(minBalance),
     includeInBal,
@@ -227,6 +232,8 @@ export default function AssetFormScreen() {
                 />
               ))}
             </Menu>
+
+            <CurrencyPickerField value={currency} onChangeText={setCurrency} />
 
             <View className="flex-row gap-3">
               <View className="flex-1">

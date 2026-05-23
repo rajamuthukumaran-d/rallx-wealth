@@ -1,5 +1,6 @@
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
+import { DEFAULT_CURRENCY } from "../constants";
 import { database } from "../index";
 import Asset from "../models/Asset";
 
@@ -23,6 +24,7 @@ export function useAssets(onlyIncludedInBal = true): AssetsData {
       .observeWithColumns([
         "name",
         "type",
+        "currency",
         "balance",
         "min_balance",
         "include_in_bal",
@@ -81,6 +83,7 @@ export function useAsset(id: string): AssetRecord {
 export interface AssetFormData {
   name: string;
   type: string;
+  currency?: string;
   balance: number;
   minBalance: number;
   includeInBal: boolean;
@@ -91,6 +94,7 @@ export interface AssetFormData {
 function applyAssetFields(record: Asset, data: AssetFormData) {
   record.name = data.name;
   record.type = data.type;
+  record.currency = data.currency?.trim() || DEFAULT_CURRENCY;
   record.balance = data.balance;
   record.minBalance = data.minBalance;
   record.includeInBal = data.includeInBal;

@@ -1,5 +1,6 @@
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
+import { DEFAULT_CURRENCY } from "../constants";
 import { database } from "../index";
 import Debt from "../models/Debt";
 
@@ -25,6 +26,7 @@ export function useDebts(statusFilter: "active" | "all" = "active"): DebtsData {
       .observeWithColumns([
         "name",
         "type",
+        "currency",
         "status",
         "total_amount",
         "remaining_amount",
@@ -52,6 +54,7 @@ export function useDebts(statusFilter: "active" | "all" = "active"): DebtsData {
 export interface DebtFormData {
   name: string;
   type: string;
+  currency?: string;
   status: "active" | "closed";
   totalAmount: number;
   remainingAmount: number;
@@ -101,6 +104,7 @@ export function useDebt(id: string): DebtRecord {
 function applyDebtFields(record: Debt, data: DebtFormData) {
   record.name = data.name;
   record.type = data.type;
+  record.currency = data.currency?.trim() || DEFAULT_CURRENCY;
   record.status = data.status;
   record.totalAmount = data.totalAmount;
   record.remainingAmount = data.remainingAmount;
