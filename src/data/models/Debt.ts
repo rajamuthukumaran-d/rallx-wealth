@@ -1,10 +1,10 @@
 import { Model } from "@nozbe/watermelondb";
 import {
-    date,
-    field,
-    readonly,
-    relation,
-    text,
+  date,
+  field,
+  readonly,
+  relation,
+  text,
 } from "@nozbe/watermelondb/decorators";
 import Asset from "./Asset";
 
@@ -13,6 +13,7 @@ export default class Debt extends Model {
 
   @text("name") name!: string;
   @text("type") type!: string;
+  @text("currency") currency?: string;
   @field("total_amount") totalAmount!: number;
   @field("remaining_amount") remainingAmount!: number;
   @field("interest_rate") interestRate?: number;

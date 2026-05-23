@@ -6,6 +6,7 @@ export default class Asset extends Model {
 
   @text("name") name!: string;
   @text("type") type!: string;
+  @text("currency") currency?: string;
   @field("min_balance") minBalance?: number;
   @field("balance") balance!: number;
   @field("interest_rate") interestRate?: number;
