@@ -1,5 +1,7 @@
+import { CurrencyPickerField } from "@/components/CurrencyPickerField";
 import { NumberField } from "@/components/NumberField";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { DEFAULT_CURRENCY } from "@/data/constants";
 import { useAssets } from "@/data/controllers/useAssets";
 import { formatIndian, parseIndian } from "@/utils/numberFormat";
 import {
@@ -60,6 +62,7 @@ export default function DebtFormScreen() {
   const [autoDebit, setAutoDebit] = useState(false);
   const [sourceAssetId, setSourceAssetId] = useState<string | null>(null);
   const [sourceAssetMenuVisible, setSourceAssetMenuVisible] = useState(false);
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [saving, setSaving] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -83,6 +86,7 @@ export default function DebtFormScreen() {
     if (debt.dueDate) setDueDate(new Date(debt.dueDate));
     setAutoDebit(debt.autoDebit);
     setSourceAssetId((debt._raw as any).asset_id || null);
+    setCurrency(debt.currency || DEFAULT_CURRENCY);
   }, [debt]);
 
   const selectedTypeLabel =
@@ -106,6 +110,7 @@ export default function DebtFormScreen() {
   const formData = () => ({
     name: name.trim(),
     type: debtType,
+    currency,
     status,
     totalAmount: parseIndian(totalAmount),
     remainingAmount: remainingAmount
@@ -254,6 +259,8 @@ export default function DebtFormScreen() {
                 />
               ))}
             </Menu>
+
+            <CurrencyPickerField value={currency} onChangeText={setCurrency} />
 
             <View className="flex-row gap-3">
               <View className="flex-1">
