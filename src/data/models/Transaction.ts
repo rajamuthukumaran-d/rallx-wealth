@@ -13,6 +13,7 @@ import TransactionAmount from "./TransactionAmount";
 export default class Transaction extends Model {
   static table = "transactions";
 
+  @text('name') name?: string;
   @field("total_amount") totalAmount!: number;
   @text("type") type!: string;
   @field("is_refund") isRefund!: boolean;

@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 3,
+  version: 4,
   tables: [
     tableSchema({
       name: "categories",
@@ -71,6 +71,7 @@ export const schema = appSchema({
     tableSchema({
       name: "transactions",
       columns: [
+        { name: "name", type: "string", isOptional: true },
         { name: "total_amount", type: "number" },
         { name: "type", type: "string" },
         { name: "is_refund", type: "boolean" },
