@@ -1,0 +1,89 @@
+import { Q } from "@nozbe/watermelondb";
+import { useEffect, useState } from "react";
+import { database } from "../index";
+import Transaction from "../models/Transaction";
+import TransactionAmount from "../models/TransactionAmount";
+
+export interface PaymentRow {
+  assetId: string;
+  amount: number;
+}
+
+export interface TransactionFormData {
+  name: string;
+  type: string;
+  date: number;
+  categoryId: string;
+  note: string;
+  isRefund: boolean;
+  payments: PaymentRow[];
+}
+
+export async function createTransaction(data: TransactionFormData): Promise<void> {
+  if (!data.categoryId) throw new Error('categoryId is required');
+
+  const totalAmount = data.payments.reduce((sum, p) => sum + p.amount, 0);
+
+  await database.write(async () => {
+    const transaction = await database
+      .get<Transaction>("transactions")
+      .create((record) => {
+        record.name = (data.name.trim() || null) as any;
+        record.type = data.type;
+        record.totalAmount = totalAmount;
+        record.date = data.date as any;
+        record.note = data.note;
+        record.isRefund = data.isRefund;
+        record.isDeleted = false;
+        (record as any)._raw.category_id = data.categoryId;
+      });
+
+    for (const payment of data.payments) {
+      await database
+        .get<TransactionAmount>("transaction_amounts")
+        .create((record) => {
+          (record as any)._raw.transaction_id = transaction.id;
+          (record as any)._raw.asset_id = payment.assetId;
+          record.amount = payment.amount;
+          record.isDeleted = false;
+        });
+    }
+  });
+}
+
+export interface TransactionsData {
+  transactions: Transaction[];
+  isLoading: boolean;
+}
+
+export function useTransactions(): TransactionsData {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const subscription = database
+      .get<Transaction>("transactions")
+      .query(
+        Q.where("is_deleted", false),
+        Q.sortBy("date", Q.desc),
+      )
+      .observeWithColumns([
+        "name",
+        "total_amount",
+        "type",
+        "date",
+        "note",
+        "is_refund",
+        "category_id",
+        "updated_at",
+      ])
+      .subscribe((data) => {
+        setTransactions(data);
+        setIsLoading(false);
+      });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return { transactions, isLoading };
+}
