@@ -1,50 +1,45 @@
-# Welcome to your Expo app 👋
+# Rallx Wealth
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Rallx Wealth is a pnpm + Turborepo monorepo containing the Expo mobile app, a Next.js web app, and an Express API backed by MongoDB.
 
-## Get started
+## Apps
 
-1. Install dependencies
+- `apps/mobile` — the existing offline-first Expo app for iOS and Android. It uses WatermelonDB/SQLite locally.
+- `apps/web` — Next.js website scaffold.
+- `apps/api` — Express TypeScript API scaffold with `GET /health` and optional MongoDB startup connectivity.
 
-   ```bash
-   npm install
-   ```
+The mobile app is intentionally isolated: its database, backup/restore, and device integrations depend on React Native and native modules. The web app and API do not yet share domain code or connect to each other.
 
-2. Start the app
+## Setup
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Requirements: Node.js 20.19 or newer (Expo SDK 54), pnpm 10.21 or compatible.
 
 ```bash
-npm run reset-project
+pnpm install
+pnpm dev
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+`pnpm dev` starts the web app at http://localhost:3000 and the API at http://127.0.0.1:4000. Copy `apps/api/.env.example` to `apps/api/.env` and set `MONGODB_URI` to enable database connectivity.
 
-## Learn more
+The root `pnpm start`, `pnpm ios`, and `pnpm android` commands remain shortcuts for the mobile app. `pnpm web` starts the dedicated Next.js app; use `pnpm --filter @rallx/mobile web` for Expo web.
 
-To learn more about developing your project with Expo, look at the following resources:
+Run one app with a workspace filter:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+pnpm --filter @rallx/mobile start
+pnpm --filter @rallx/mobile ios
+pnpm --filter @rallx/mobile android
+pnpm --filter @rallx/mobile web
+pnpm --filter @rallx/web dev
+pnpm --filter @rallx/api dev
+```
 
-## Join the community
+Run workspace tasks with Turbo:
 
-Join our community of developers creating universal apps.
+```bash
+pnpm build
+pnpm lint
+pnpm typecheck
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Run EAS commands from `apps/mobile` so Expo configuration is discovered correctly.

@@ -1,5 +1,5 @@
 // src/components/NetWorth/Investments/MenuPickerField.tsx
-import { StyleProp, TouchableOpacity, ViewStyle } from 'react-native';
+import { StyleProp, TextStyle, TouchableOpacity } from 'react-native';
 import { Menu, TextInput, useTheme } from 'react-native-paper';
 
 type PickerItem = { label: string; value: string };
@@ -12,7 +12,7 @@ type MenuPickerFieldProps = {
   onDismiss: () => void;
   items: PickerItem[];
   onSelect: (value: string) => void;
-  style?: StyleProp<ViewStyle>;
+  style?: StyleProp<TextStyle>;
 };
 
 export function MenuPickerField({

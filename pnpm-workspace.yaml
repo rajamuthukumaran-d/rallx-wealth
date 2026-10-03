@@ -1,7 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+
 allowBuilds:
   unrs-resolver: true
 
 nodeLinker: hoisted
 
 patchedDependencies:
-  react-native-zip-archive@7.1.0: patches/react-native-zip-archive@7.1.0.patch
+  react-native-zip-archive@7.1.0: apps/mobile/patches/react-native-zip-archive@7.1.0.patch
