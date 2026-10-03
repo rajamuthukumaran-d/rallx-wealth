@@ -1,14 +1,20 @@
 import { NumberField } from "@/components/NumberField";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { createTransaction } from "@/data/controllers/useTransactions";
-import { parseIndian, formatIndian } from "@/utils/numberFormat";
+import { formatIndian, parseIndian } from "@/utils/numberFormat";
 import { pickerStore } from "@/utils/pickerStore";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Platform, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   Button,
   Divider,
@@ -45,6 +51,7 @@ export default function AddTransactionScreen() {
   const [categoryId, setCategoryId] = useState("");
   const [categoryLabel, setCategoryLabel] = useState("");
   const [note, setNote] = useState("");
+  const [showNote, setShowNote] = useState(false);
   const [isRefund, setIsRefund] = useState(false);
   const [saving, setSaving] = useState(false);
   const [payments, setPayments] = useState<PaymentEntry[]>([
@@ -130,7 +137,10 @@ export default function AddTransactionScreen() {
       router.back();
     } catch (e) {
       console.error(e);
-      Alert.alert('Save failed', 'Could not save the transaction. Please try again.');
+      Alert.alert(
+        "Save failed",
+        "Could not save the transaction. Please try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -171,30 +181,25 @@ export default function AddTransactionScreen() {
             />
           </View>
 
-          {/* Total Amount */}
-          <View
-            className="items-center py-5 rounded-3xl mb-4"
-            style={sectionBg}
-          >
-            <Text
-              variant="labelSmall"
-              style={{ color: theme.colors.onSurfaceVariant }}
-            >
-              Total Amount
-            </Text>
-            <Text
-              variant="headlineMedium"
-              style={{ color: theme.colors.onSurface, marginTop: 4 }}
-            >
-              {formatIndian(totalAmount.toFixed(2))}
-            </Text>
+          {/* Type selector */}
+          <View className="rounded-3xl p-4 mb-4" style={sectionBg}>
+            <SegmentedButtons
+              value={type}
+              onValueChange={(v) => {
+                setType(v);
+                setCategoryId("");
+                setCategoryLabel("");
+              }}
+              buttons={[
+                { value: "expense", label: "Expense" },
+                { value: "income", label: "Income" },
+                { value: "transfer", label: "Transfer" },
+              ]}
+            />
           </View>
 
           {/* Category / Date / Note */}
-          <View
-            className="rounded-3xl overflow-hidden mb-4"
-            style={sectionBg}
-          >
+          <View className="rounded-3xl overflow-hidden mb-4" style={sectionBg}>
             <TouchableOpacity onPress={openCategoryPicker}>
               <List.Item
                 title="Category"
@@ -237,22 +242,67 @@ export default function AddTransactionScreen() {
 
             <Divider />
 
-            <View className="flex-row items-center px-2">
-              <List.Icon
-                icon="note-text-outline"
-                color={theme.colors.onSurfaceVariant}
-              />
-              <TextInput
-                placeholder="Add a note..."
-                value={note}
-                onChangeText={setNote}
-                mode="flat"
-                dense
-                underlineColor="transparent"
-                activeUnderlineColor="transparent"
-                style={{ flex: 1, backgroundColor: "transparent" }}
-              />
-            </View>
+            {showNote || note.length > 0 ? (
+              <View className="flex-row items-start px-4 py-3">
+                <List.Icon
+                  icon="note-text-outline"
+                  color={theme.colors.onSurfaceVariant}
+                  style={{ minHeight: 20 }}
+                />
+                <TextInput
+                  placeholder="Add a note..."
+                  value={note}
+                  onChangeText={setNote}
+                  mode="flat"
+                  multiline
+                  underlineColor="transparent"
+                  activeUnderlineColor="transparent"
+                  style={{
+                    flex: 1,
+                    backgroundColor: "transparent",
+                    minHeight: 80,
+                  }}
+                  autoFocus={showNote && note.length === 0}
+                  onBlur={() => {
+                    if (!note.trim()) setShowNote(false);
+                  }}
+                />
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => setShowNote(true)}>
+                <List.Item
+                  title="Add a note..."
+                  titleStyle={{ color: theme.colors.onSurfaceVariant }}
+                  left={(props) => (
+                    <List.Icon
+                      {...props}
+                      icon="note-text-outline"
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  )}
+                  style={{ minHeight: 56 }}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Total Amount */}
+          <View
+            className="items-center py-5 rounded-3xl mb-4"
+            style={sectionBg}
+          >
+            <Text
+              variant="labelSmall"
+              style={{ color: theme.colors.onSurfaceVariant }}
+            >
+              Total Amount
+            </Text>
+            <Text
+              variant="headlineMedium"
+              style={{ color: theme.colors.onSurface, marginTop: 4 }}
+            >
+              {formatIndian(totalAmount.toFixed(2))}
+            </Text>
           </View>
 
           {/* Payment Methods */}
@@ -270,9 +320,14 @@ export default function AddTransactionScreen() {
             </View>
 
             {payments.map((payment) => (
-              <View key={payment.key} className="flex-row items-center gap-2 mb-3">
+              <View
+                key={payment.key}
+                className="flex-row items-center gap-2 mb-3"
+              >
                 <View className="flex-1">
-                  <TouchableOpacity onPress={() => openAssetPicker(payment.key)}>
+                  <TouchableOpacity
+                    onPress={() => openAssetPicker(payment.key)}
+                  >
                     <TextInput
                       label="Account"
                       value={payment.assetLabel}
@@ -301,20 +356,6 @@ export default function AddTransactionScreen() {
                 )}
               </View>
             ))}
-
-            <SegmentedButtons
-              value={type}
-              onValueChange={(v) => {
-                setType(v);
-                setCategoryId("");
-                setCategoryLabel("");
-              }}
-              buttons={[
-                { value: "expense", label: "Expense" },
-                { value: "income", label: "Income" },
-                { value: "transfer", label: "Transfer" },
-              ]}
-            />
           </View>
 
           {/* Is Refund */}
@@ -323,10 +364,7 @@ export default function AddTransactionScreen() {
             style={sectionBg}
           >
             <View className="flex-row items-center gap-3">
-              <List.Icon
-                icon="refresh"
-                color={theme.colors.onSurfaceVariant}
-              />
+              <List.Icon icon="refresh" color={theme.colors.onSurfaceVariant} />
               <Text style={{ color: theme.colors.onSurface }}>Is Refund</Text>
             </View>
             <Switch value={isRefund} onValueChange={setIsRefund} />
