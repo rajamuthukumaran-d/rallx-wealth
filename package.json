@@ -17,11 +17,5 @@
   },
   "devDependencies": {
     "turbo": "^2.6.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "shell-quote": ">=1.8.4",
-      "tar": ">=7.5.19"
-    }
   }
 }

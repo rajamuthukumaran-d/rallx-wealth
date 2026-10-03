@@ -1,15 +1,14 @@
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
-import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
-import { withLayoutContext } from "expo-router";
-
-const MaterialBottomTabs = withLayoutContext(
-  createMaterialBottomTabNavigator().Navigator,
-);
+import { Tabs } from "expo-router";
+import { MaterialTabBar } from "@/components/material-tab-bar";
 
 export default function TabLayout() {
   return (
-    <MaterialBottomTabs>
-      <MaterialBottomTabs.Screen
+    <Tabs
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <MaterialTabBar {...props} />}
+    >
+      <Tabs.Screen
         name="index"
         options={{
           title: "Home",
@@ -18,7 +17,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <MaterialBottomTabs.Screen
+      <Tabs.Screen
         name="transactions"
         options={{
           title: "Transactions",
@@ -31,7 +30,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <MaterialBottomTabs.Screen
+      <Tabs.Screen
         name="(net-worth)/index"
         options={{
           title: "Net Worth",
@@ -40,7 +39,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <MaterialBottomTabs.Screen
+      <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",
@@ -49,6 +48,6 @@ export default function TabLayout() {
           ),
         }}
       />
-    </MaterialBottomTabs>
+    </Tabs>
   );
 }
