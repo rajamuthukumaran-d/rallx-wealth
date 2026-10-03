@@ -1,3 +1,4 @@
+import type { HealthResponse } from "@rallx-wealth/types-database";
 import "dotenv/config";
 import express from "express";
 import { MongoClient } from "mongodb";
@@ -8,7 +9,11 @@ const mongoClient = mongoUri ? new MongoClient(mongoUri) : undefined;
 
 app.use(express.json());
 app.get("/health", (_request, response) => {
-  response.json({ status: "ok", database: mongoClient ? "connected" : "not_configured" });
+  const health: HealthResponse = {
+    status: "ok",
+    database: mongoClient ? "connected" : "not_configured",
+  };
+  response.json(health);
 });
 
 const port = Number(process.env.PORT ?? 4000);

@@ -1,23 +1,11 @@
+import type { NetWorthTotals, RecentUpdate } from "@rallx-wealth/types-common";
 import { useAssets } from "./useAssets";
 import { useDebts } from "./useDebts";
 import { useInvestments } from "./useInvestments";
 
-export type RecentUpdateType = "asset" | "investment" | "debt";
+export type { RecentUpdate, RecentUpdateType } from "@rallx-wealth/types-common";
 
-export interface RecentUpdate {
-  id: string;
-  name: string;
-  type: RecentUpdateType;
-  itemType: string;
-  updatedAt: number;
-}
-
-export interface NetWorthSummary {
-  totalAssets: number;
-  totalInvestments: number;
-  totalDebts: number;
-  netWorth: number;
-  recentUpdates: RecentUpdate[];
+export interface NetWorthSummary extends NetWorthTotals {
   isLoading: boolean;
 }
 

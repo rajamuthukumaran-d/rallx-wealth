@@ -1,5 +1,5 @@
 {
-  "name": "@rallx/web",
+  "name": "@rallx-wealth/web",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,6 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@rallx-wealth/types-common": "workspace:*",
+    "@rallx-wealth/types-database": "workspace:*",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"

@@ -1,5 +1,5 @@
 {
-  "name": "@rallx/mobile",
+  "name": "@rallx-wealth/mobile",
   "private": true,
   "main": "expo-router/entry",
   "version": "1.0.0",
@@ -15,6 +15,8 @@
     "@expo/vector-icons": "^15.0.3",
     "@nozbe/watermelondb": "^0.28.0",
     "@pchmn/expo-material3-theme": "^1.4.0",
+    "@rallx-wealth/types-common": "workspace:*",
+    "@rallx-wealth/types-database": "workspace:*",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-vector-icons/material-design-icons": "^12.4.0",
     "@react-navigation/bottom-tabs": "^7.4.0",

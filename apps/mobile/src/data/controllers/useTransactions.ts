@@ -1,23 +1,11 @@
+import type { TransactionFormData } from "@rallx-wealth/types-common/forms";
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
 import { database } from "../index";
 import Transaction from "../models/Transaction";
 import TransactionAmount from "../models/TransactionAmount";
 
-export interface PaymentRow {
-  assetId: string;
-  amount: number;
-}
-
-export interface TransactionFormData {
-  name: string;
-  type: string;
-  date: number;
-  categoryId: string;
-  note: string;
-  isRefund: boolean;
-  payments: PaymentRow[];
-}
+export type { PaymentRow, TransactionFormData } from "@rallx-wealth/types-common/forms";
 
 export async function createTransaction(data: TransactionFormData): Promise<void> {
   if (!data.categoryId) throw new Error('categoryId is required');

@@ -1,8 +1,11 @@
+import type { AssetFormData } from "@rallx-wealth/types-common/forms";
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
 import { DEFAULT_CURRENCY } from "../constants";
 import { database } from "../index";
 import Asset from "../models/Asset";
+
+export type { AssetFormData } from "@rallx-wealth/types-common/forms";
 
 export interface AssetsData {
   assets: Asset[];
@@ -78,17 +81,6 @@ export function useAsset(id: string): AssetRecord {
   }, [id]);
 
   return { asset, isLoading };
-}
-
-export interface AssetFormData {
-  name: string;
-  type: string;
-  currency?: string;
-  balance: number;
-  minBalance: number;
-  includeInBal: boolean;
-  maturityDate?: number;
-  interestRate?: number;
 }
 
 function applyAssetFields(record: Asset, data: AssetFormData) {

@@ -1,13 +1,10 @@
+import type { StockQuote } from "@rallx-wealth/types-common";
+
+export type { StockQuote } from "@rallx-wealth/types-common";
+
 // Uses Yahoo Finance v8 chart API — no auth required.
 // Supports US stocks, Indian stocks (NSE/BSE), crypto, ETFs, etc.
 
-export interface StockQuote {
-  symbol: string;
-  name: string;
-  price: number;
-  currency: string;
-  instrumentType: string;
-}
 
 export const EXCHANGES: { label: string; value: string; suffix: string }[] = [
   { label: "NSE (India)", value: "NSE", suffix: ".NS" },

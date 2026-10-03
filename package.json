@@ -1,5 +1,5 @@
 {
-  "name": "rallx-wealth",
+  "name": "@rallx-wealth/workspace",
   "private": true,
   "packageManager": "pnpm@10.21.0",
   "engines": {
@@ -7,10 +7,10 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "start": "pnpm --filter @rallx/mobile start",
-    "ios": "pnpm --filter @rallx/mobile ios",
-    "android": "pnpm --filter @rallx/mobile android",
-    "web": "pnpm --filter @rallx/web dev",
+    "start": "pnpm --filter @rallx-wealth/mobile start",
+    "ios": "pnpm --filter @rallx-wealth/mobile ios",
+    "android": "pnpm --filter @rallx-wealth/mobile android",
+    "web": "pnpm --filter @rallx-wealth/web dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck"

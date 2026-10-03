@@ -1,7 +1,8 @@
+import type { CategoryRecord } from "@rallx-wealth/types-database";
 import { Model } from "@nozbe/watermelondb";
 import { date, field, readonly, text } from "@nozbe/watermelondb/decorators";
 
-export default class Category extends Model {
+export default class Category extends Model implements CategoryRecord {
   static table = "categories";
 
   @text("name") name!: string;

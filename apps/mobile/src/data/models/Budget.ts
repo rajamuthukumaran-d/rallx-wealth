@@ -1,3 +1,4 @@
+import type { BudgetRecord } from "@rallx-wealth/types-database";
 import { Model } from "@nozbe/watermelondb";
 import {
     date,
@@ -8,7 +9,7 @@ import {
 } from "@nozbe/watermelondb/decorators";
 import Category from "./Category";
 
-export default class Budget extends Model {
+export default class Budget extends Model implements Omit<BudgetRecord, "categoryId"> {
   static table = "budgets";
 
   @field("amount") amount!: number;

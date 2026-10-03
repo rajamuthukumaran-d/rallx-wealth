@@ -1,8 +1,11 @@
+import type { DebtFormData } from "@rallx-wealth/types-common/forms";
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
 import { DEFAULT_CURRENCY } from "../constants";
 import { database } from "../index";
 import Debt from "../models/Debt";
+
+export type { DebtFormData } from "@rallx-wealth/types-common/forms";
 
 export interface DebtsData {
   debts: Debt[];
@@ -49,21 +52,6 @@ export function useDebts(statusFilter: "active" | "all" = "active"): DebtsData {
   const totalEmi = debts.reduce((sum, d) => sum + (d.emiAmount ?? 0), 0);
 
   return { debts, totalAmount, totalRemaining, totalEmi, isLoading };
-}
-
-export interface DebtFormData {
-  name: string;
-  type: string;
-  currency?: string;
-  status: "active" | "closed";
-  totalAmount: number;
-  remainingAmount: number;
-  autoDebit: boolean;
-  emiAmount?: number;
-  interestRate?: number;
-  defaultRewardPoints?: number;
-  roundOffAmount?: number;
-  dueDate?: number;
 }
 
 export interface DebtRecord {

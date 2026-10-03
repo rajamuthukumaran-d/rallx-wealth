@@ -1,3 +1,4 @@
+import type { TransactionRecord } from "@rallx-wealth/types-database";
 import { Model, Query } from "@nozbe/watermelondb";
 import {
   children,
@@ -10,7 +11,9 @@ import {
 import Category from "./Category";
 import TransactionAmount from "./TransactionAmount";
 
-export default class Transaction extends Model {
+export default class Transaction extends Model
+  implements Omit<TransactionRecord, "categoryId" | "linkedTransactionId">
+{
   static table = "transactions";
 
   @text('name') name?: string;

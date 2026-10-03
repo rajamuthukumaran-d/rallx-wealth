@@ -1,5 +1,5 @@
 {
-  "name": "@rallx/api",
+  "name": "@rallx-wealth/api",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@rallx-wealth/types-common": "workspace:*",
+    "@rallx-wealth/types-database": "workspace:*",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "mongodb": "^7.7.0"

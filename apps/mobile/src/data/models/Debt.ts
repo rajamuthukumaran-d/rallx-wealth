@@ -1,3 +1,4 @@
+import type { DebtRecord } from "@rallx-wealth/types-database";
 import { Model } from "@nozbe/watermelondb";
 import {
   date,
@@ -8,7 +9,7 @@ import {
 } from "@nozbe/watermelondb/decorators";
 import Asset from "./Asset";
 
-export default class Debt extends Model {
+export default class Debt extends Model implements Omit<DebtRecord, "assetId"> {
   static table = "debts";
 
   @text("name") name!: string;

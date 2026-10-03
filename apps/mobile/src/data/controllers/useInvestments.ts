@@ -1,8 +1,11 @@
+import type { InvestmentFormData, SellInvestmentData } from "@rallx-wealth/types-common/forms";
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
 import { database } from "../index";
 import Investment from "../models/Investment";
 import { fetchStockQuote } from "@/utils/stockPrice";
+
+export type { InvestmentFormData, SellInvestmentData } from "@rallx-wealth/types-common/forms";
 
 export interface InvestmentsData {
   investments: Investment[];
@@ -74,18 +77,6 @@ export function useInvestment(id: string): InvestmentRecord {
   return { investment, isLoading };
 }
 
-export interface InvestmentFormData {
-  name: string;
-  type: string;
-  symbol?: string;
-  platform?: string;
-  exchange?: string;
-  currency?: string;
-  investedAmount: number;
-  currentValue: number;
-  quantity?: number;
-}
-
 function applyInvestmentFields(record: Investment, data: InvestmentFormData) {
   record.name = data.name;
   record.type = data.type;
@@ -151,13 +142,6 @@ export function useInvestmentGroup(symbol?: string, name?: string) {
   }, [symbol, name]);
 
   return { investments, isLoading };
-}
-
-export interface SellInvestmentData {
-  symbol?: string;
-  name: string;
-  unitsSold?: number;
-  soldAmount?: number;
 }
 
 export async function sellInvestment(data: SellInvestmentData): Promise<void> {

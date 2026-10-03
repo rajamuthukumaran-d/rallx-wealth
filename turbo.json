@@ -6,7 +6,7 @@
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": { "cache": false, "persistent": true },
-    "@rallx/api#dev": {
+    "@rallx-wealth/api#dev": {
       "cache": false,
       "persistent": true,
       "passThroughEnv": ["PORT", "HOST", "MONGODB_URI"]

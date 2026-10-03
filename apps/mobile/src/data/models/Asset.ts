@@ -1,7 +1,8 @@
+import type { AssetRecord } from "@rallx-wealth/types-database";
 import { Model } from "@nozbe/watermelondb";
 import { date, field, readonly, text } from "@nozbe/watermelondb/decorators";
 
-export default class Asset extends Model {
+export default class Asset extends Model implements AssetRecord {
   static table = "assets";
 
   @text("name") name!: string;

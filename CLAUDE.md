@@ -7,7 +7,9 @@ Guidance for work in the Rallx Wealth monorepo.
 - `apps/mobile` — existing offline-first Expo SDK 54 / Expo Router app for iOS and Android.
 - `apps/web` — Next.js web app.
 - `apps/api` — Express TypeScript API service with the MongoDB Node.js driver.
-- `packages/*` — future platform-neutral shared packages. Keep platform-specific code out of these packages.
+- `packages/types-database` — platform-neutral database record contracts.
+- `packages/types-common` — shared form inputs and common domain types.
+- `packages/*` — platform-neutral shared packages. Keep platform-specific code out of these packages.
 
 Use pnpm workspaces and Turbo from the repository root. The mobile app uses native WatermelonDB, Expo file and sharing APIs, and a patched native ZIP package. Do not import its models, controllers, or components directly into the web app or API. Extract genuinely cross-platform domain types or pure utilities into a shared package when needed.
 
@@ -16,16 +18,16 @@ Use pnpm workspaces and Turbo from the repository root. The mobile app uses nati
 ```bash
 pnpm install
 pnpm dev                       # start web and API in parallel
-pnpm --filter @rallx/mobile start
-pnpm --filter @rallx/mobile ios
-pnpm --filter @rallx/mobile android
-pnpm --filter @rallx/mobile web
+pnpm --filter @rallx-wealth/mobile start
+pnpm --filter @rallx-wealth/mobile ios
+pnpm --filter @rallx-wealth/mobile android
+pnpm --filter @rallx-wealth/mobile web
 pnpm build
 pnpm lint
 pnpm typecheck
 ```
 
-Expo Application Services commands should run from `apps/mobile`, where `app.json` and `eas.json` live. The dedicated web app is `apps/web`; `@rallx/mobile web` remains Expo's web target and is separate.
+Expo Application Services commands should run from `apps/mobile`, where `app.json` and `eas.json` live. The dedicated web app is `apps/web`; `@rallx-wealth/mobile web` remains Expo's web target and is separate.
 
 ## Mobile app
 
@@ -34,7 +36,7 @@ Expo Application Services commands should run from `apps/mobile`, where `app.jso
 - The schema and all model definitions are mobile-local. SQLite is the local offline store; the API workspace currently contains only a health endpoint and is not wired to the mobile app.
 - Models use legacy WatermelonDB decorators imported from `@nozbe/watermelondb/decorators`. Decorator support is configured in `apps/mobile/babel.config.js` and `apps/mobile/tsconfig.json`.
 - The mobile `@/*` alias maps to `apps/mobile/src/*`.
-- Use Expo-compatible package versions and `pnpm --filter @rallx/mobile exec expo install <package>` when adding native or Expo packages.
+- Use Expo-compatible package versions and `pnpm --filter @rallx-wealth/mobile exec expo install <package>` when adding native or Expo packages.
 
 ## Web and API
 

@@ -1,3 +1,4 @@
+import type { TransactionAmountRecord } from "@rallx-wealth/types-database";
 import { Model } from "@nozbe/watermelondb";
 import {
     date,
@@ -9,7 +10,9 @@ import Asset from "./Asset";
 import Debt from "./Debt";
 import Transaction from "./Transaction";
 
-export default class TransactionAmount extends Model {
+export default class TransactionAmount extends Model
+  implements Omit<TransactionAmountRecord, "transactionId" | "assetId" | "debtId">
+{
   static table = "transaction_amounts";
 
   @relation("transactions", "transaction_id") transaction!: Transaction;

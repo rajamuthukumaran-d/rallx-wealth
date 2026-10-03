@@ -1,7 +1,10 @@
+import type { CategoryFormData } from "@rallx-wealth/types-common/forms";
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
 import { database } from "../index";
 import Category from "../models/Category";
+
+export type { CategoryFormData } from "@rallx-wealth/types-common/forms";
 
 export interface CategoriesData {
   categories: Category[];
@@ -61,12 +64,6 @@ export function useCategory(id: string): CategoryRecord {
   }, [id]);
 
   return { category, isLoading };
-}
-
-export interface CategoryFormData {
-  name: string;
-  icon: string;
-  type: string;
 }
 
 function applyCategoryFields(record: Category, data: CategoryFormData) {

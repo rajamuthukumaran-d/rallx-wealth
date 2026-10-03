@@ -1,7 +1,8 @@
+import type { InvestmentRecord } from "@rallx-wealth/types-database";
 import { Model } from "@nozbe/watermelondb";
 import { date, field, readonly, text } from "@nozbe/watermelondb/decorators";
 
-export default class Investment extends Model {
+export default class Investment extends Model implements InvestmentRecord {
   static table = "investments";
 
   @text("name") name!: string;
