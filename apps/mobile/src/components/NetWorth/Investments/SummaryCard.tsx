@@ -1,5 +1,5 @@
 // src/components/NetWorth/Investments/SummaryCard.tsx
-import { formatFullCurrency } from '@/utils/currency';
+import { formatFullCurrency } from "@rallx-wealth/utils-frontend";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';

@@ -1,7 +1,6 @@
+import { groupByType, formatCurrency, formatFullCurrency } from "@rallx-wealth/utils-frontend";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useAssets } from "@/data/controllers/useAssets";
-import Asset from "@/data/models/Asset";
-import { formatCurrency, formatFullCurrency } from "@/utils/currency";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { ScrollView, TouchableOpacity, View } from "react-native";
@@ -63,15 +62,6 @@ function getTypeConfig(type: string, index: number): TypeConfig {
     TYPE_ICON_MAP[type.toLowerCase()] ??
     FALLBACK_PALETTE[index % FALLBACK_PALETTE.length]
   );
-}
-
-function groupByType(assets: Asset[]): [string, Asset[]][] {
-  const map: Record<string, Asset[]> = {};
-  for (const asset of assets) {
-    if (!map[asset.type]) map[asset.type] = [];
-    map[asset.type].push(asset);
-  }
-  return Object.entries(map);
 }
 
 export default function AssetsBreakdownScreen() {

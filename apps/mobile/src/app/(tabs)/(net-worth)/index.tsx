@@ -9,9 +9,7 @@ import { useDebts } from "@/data/controllers/useDebts";
 import { useInvestments } from "@/data/controllers/useInvestments";
 import { useNetWorth } from "@/data/controllers/useNetWorth";
 import { useExchangeRate } from "@/context/ExchangeRateContext";
-import { formatCurrency } from "@/utils/currency";
-import { getUniqueTypes } from "@/utils/string";
-import { convertToInr } from "@/utils/stockPrice";
+import { formatCurrency, getUniqueTypes, convertToInr } from "@rallx-wealth/utils-frontend";
 import { BreakdownCard, CARD_COLORS } from "@/components/NetWorth/BreakdownCard";
 import { RecentUpdateRow } from "@/components/NetWorth/RecentUpdateRow";
 

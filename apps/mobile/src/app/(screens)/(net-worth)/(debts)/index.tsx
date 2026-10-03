@@ -1,7 +1,7 @@
+import { formatDueDate, groupByType, formatCurrency, formatFullCurrency } from "@rallx-wealth/utils-frontend";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useDebts } from "@/data/controllers/useDebts";
 import Debt from "@/data/models/Debt";
-import { formatCurrency, formatFullCurrency } from "@/utils/currency";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
@@ -50,23 +50,6 @@ function getTypeConfig(type: string, index: number): TypeConfig {
   if (TYPE_CONFIG_MAP[key]) return TYPE_CONFIG_MAP[key];
   const fallback = FALLBACK_PALETTE[index % FALLBACK_PALETTE.length];
   return { ...fallback, label: type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) };
-}
-
-function groupByType(debts: Debt[]): [string, Debt[]][] {
-  const map: Record<string, Debt[]> = {};
-  for (const debt of debts) {
-    if (!map[debt.type]) map[debt.type] = [];
-    map[debt.type].push(debt);
-  }
-  return Object.entries(map);
-}
-
-function formatDueDate(dueDate?: number): string {
-  if (!dueDate) return "—";
-  return new Date(dueDate).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
 }
 
 type MetaItem = { label: string; value: string; alignRight?: boolean };

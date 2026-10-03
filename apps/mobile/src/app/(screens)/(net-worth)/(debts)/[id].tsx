@@ -3,7 +3,7 @@ import { NumberField } from "@/components/NumberField";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { DEFAULT_CURRENCY } from "@/data/constants";
 import { useAssets } from "@/data/controllers/useAssets";
-import { formatIndian, parseIndian } from "@/utils/numberFormat";
+import { formatIndian, parseIndian } from "@rallx-wealth/utils-frontend";
 import {
   createDebt,
   deleteDebt,

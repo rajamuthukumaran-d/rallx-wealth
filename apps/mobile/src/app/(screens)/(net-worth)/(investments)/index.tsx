@@ -1,3 +1,4 @@
+import { groupBySymbol, groupByType, formatCurrency, convertToInr } from "@rallx-wealth/utils-frontend";
 // src/app/(screens)/(net-worth)/(investments)/index.tsx
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { SummaryCard } from '@/components/NetWorth/Investments/SummaryCard';
@@ -6,11 +7,8 @@ import {
   refreshInvestmentPrices,
   useInvestments,
 } from '@/data/controllers/useInvestments';
-import Investment from '@/data/models/Investment';
 import { useExchangeRate } from '@/context/ExchangeRateContext';
-import { formatCurrency } from '@/utils/currency';
-import { effectiveCurrentValue } from '@/utils/investment';
-import { convertToInr } from '@/utils/stockPrice';
+import { effectiveCurrentValue } from "@rallx-wealth/utils-database";
 import { useSlideReveal } from '@/hooks/useSlideReveal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
@@ -48,25 +46,6 @@ function getTypeConfig(type: string, index: number): TypeConfig {
   if (TYPE_CONFIG_MAP[key]) return TYPE_CONFIG_MAP[key];
   const fallback = FALLBACK_PALETTE[index % FALLBACK_PALETTE.length];
   return { ...fallback, label: type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) };
-}
-
-function groupByType(investments: Investment[]): [string, Investment[]][] {
-  const map: Record<string, Investment[]> = {};
-  for (const inv of investments) {
-    if (!map[inv.type]) map[inv.type] = [];
-    map[inv.type].push(inv);
-  }
-  return Object.entries(map);
-}
-
-function groupBySymbol(investments: Investment[]): [string, Investment[]][] {
-  const map: Record<string, Investment[]> = {};
-  for (const inv of investments) {
-    const key = inv.symbol ? inv.symbol.toUpperCase() : `__solo__${inv.id}`;
-    if (!map[key]) map[key] = [];
-    map[key].push(inv);
-  }
-  return Object.entries(map);
 }
 
 export default function InvestmentsBreakdownScreen() {

@@ -1,7 +1,7 @@
+import { getInitials, formatCurrency } from "@rallx-wealth/utils-frontend";
 // src/components/NetWorth/Investments/SymbolRow.tsx
 import Investment from '@/data/models/Investment';
-import { formatCurrency } from '@/utils/currency';
-import { effectiveCurrentValue } from '@/utils/investment';
+import { effectiveCurrentValue } from "@rallx-wealth/utils-database";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Animated, TouchableOpacity, View } from 'react-native';
@@ -19,15 +19,6 @@ type SymbolRowProps = {
   onToggleExpand: () => void;
   toInr: (amount: number, currency?: string) => number;
 };
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase();
-}
 
 export function SymbolRow({
   symKey,

@@ -7,3 +7,12 @@ export function getUniqueTypes(items: Array<{ type: string }>): string {
   const unique = [...new Set(items.map((i) => capitalise(i.type)))];
   return unique.slice(0, 3).join(" • ");
 }
+
+export function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase();
+}

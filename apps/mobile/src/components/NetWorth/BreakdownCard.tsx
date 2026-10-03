@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
-import { formatFullCurrency } from "@/utils/currency";
+import { formatFullCurrency } from "@rallx-wealth/utils-frontend";
 
 export const CARD_COLORS = {
   assets: {

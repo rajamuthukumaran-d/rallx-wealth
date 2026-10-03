@@ -1,7 +1,6 @@
 // src/components/NetWorth/Investments/FifoLotRow.tsx
 import Investment from '@/data/models/Investment';
-import { formatCurrency } from '@/utils/currency';
-import { formatUnits } from '@/utils/investment';
+import { formatCurrency, formatUnits } from "@rallx-wealth/utils-frontend";
 import { View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 

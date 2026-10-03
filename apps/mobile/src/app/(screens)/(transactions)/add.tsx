@@ -1,7 +1,7 @@
 import { NumberField } from "@/components/NumberField";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { createTransaction } from "@/data/controllers/useTransactions";
-import { formatIndian, parseIndian } from "@/utils/numberFormat";
+import { formatIndian, parseIndian } from "@rallx-wealth/utils-frontend";
 import { pickerStore } from "@/utils/pickerStore";
 import DateTimePicker, {
   DateTimePickerEvent,

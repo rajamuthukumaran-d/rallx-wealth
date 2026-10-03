@@ -2,8 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, View } from "react-native";
 import { Text } from "react-native-paper";
 import type { RecentUpdate } from "@/data/controllers/useNetWorth";
-import { formatRelativeDate } from "@/utils/date";
-import { capitalise } from "@/utils/string";
+import { formatRelativeDate, capitalise } from "@rallx-wealth/utils-frontend";
 
 const ICON_META: Record<RecentUpdate["type"], { icon: string; iconBg: string; iconColor: string }> =
   {

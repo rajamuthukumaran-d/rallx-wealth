@@ -5,3 +5,11 @@ export function formatRelativeDate(ts: number): string {
   if (days < 7) return `${days} days ago`;
   return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
+
+export function formatDueDate(dueDate?: number): string {
+  if (!dueDate) return "—";
+  return new Date(dueDate).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}

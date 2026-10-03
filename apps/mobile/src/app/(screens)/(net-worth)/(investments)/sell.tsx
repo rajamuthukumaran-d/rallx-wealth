@@ -9,8 +9,7 @@ import {
   useInvestmentGroup,
 } from '@/data/controllers/useInvestments';
 import Investment from '@/data/models/Investment';
-import { formatCurrency, getCurrencySymbol } from '@/utils/currency';
-import { formatUnits } from '@/utils/investment';
+import { formatCurrency, getCurrencySymbol, formatUnits } from "@rallx-wealth/utils-frontend";
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';

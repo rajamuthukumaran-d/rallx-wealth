@@ -1,4 +1,4 @@
-import { formatIndian } from "@/utils/numberFormat";
+import { formatIndian } from "@rallx-wealth/utils-frontend";
 import type { StyleProp, TextStyle } from "react-native";
 import { TextInput } from "react-native-paper";
 

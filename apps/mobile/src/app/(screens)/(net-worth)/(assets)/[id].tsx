@@ -9,7 +9,7 @@ import {
   updateAsset,
   useAsset,
 } from "@/data/controllers/useAssets";
-import { formatIndian, parseIndian } from "@/utils/numberFormat";
+import { formatIndian, parseIndian } from "@rallx-wealth/utils-frontend";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";

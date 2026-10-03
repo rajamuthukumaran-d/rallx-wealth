@@ -1,7 +1,7 @@
 // src/components/NetWorth/Investments/PurchaseRow.tsx
 import Investment from '@/data/models/Investment';
-import { formatCurrency } from '@/utils/currency';
-import { effectiveCurrentValue } from '@/utils/investment';
+import { formatCurrency } from "@rallx-wealth/utils-frontend";
+import { effectiveCurrentValue } from "@rallx-wealth/utils-database";
 import { useRouter } from 'expo-router';
 import { TouchableOpacity, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';

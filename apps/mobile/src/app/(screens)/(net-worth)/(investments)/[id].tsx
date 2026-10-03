@@ -1,3 +1,4 @@
+import { mapInstrumentType, formatIndian, parseIndian, EXCHANGES } from "@rallx-wealth/utils-frontend";
 // src/app/(screens)/(net-worth)/(investments)/[id].tsx
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { MenuPickerField } from '@/components/NetWorth/Investments/MenuPickerField';
@@ -10,8 +11,7 @@ import {
   useInvestment,
 } from '@/data/controllers/useInvestments';
 import { NumberField } from '@/components/NumberField';
-import { formatIndian, parseIndian } from '@/utils/numberFormat';
-import { EXCHANGES, fetchStockQuote } from '@/utils/stockPrice';
+import { fetchStockQuote } from "@/utils/stockPrice";
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -35,17 +35,6 @@ const INVESTMENT_TYPES = [
   { label: 'Gold', value: 'gold' },
   { label: 'Silver', value: 'silver' },
 ];
-
-function mapInstrumentType(instrumentType: string): string {
-  switch (instrumentType.toUpperCase()) {
-    case 'EQUITY': return 'stock';
-    case 'ETF': return 'etf';
-    case 'CRYPTOCURRENCY': return 'crypto';
-    case 'MUTUALFUND': return 'mutual_fund';
-    case 'BOND': return 'bonds';
-    default: return '';
-  }
-}
 
 export default function InvestmentFormScreen() {
   const theme = useTheme();
