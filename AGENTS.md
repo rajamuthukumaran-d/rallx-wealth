@@ -49,6 +49,12 @@ Expo Application Services commands should run from `apps/mobile`, where `app.jso
 
 Financial data is sensitive. Avoid logging account or transaction data, and keep secrets in local environment files (ignored by git). Do not commit credentials or real financial records.
 
+## Commits
+
+Every commit must follow Conventional Commits 1.0.0. Use the format `<type>[optional scope][!]: <description>`, for example `feat(utils-frontend): extract shared stock helpers` or `docs: update agent guidance`.
+
+Use `feat` for new features, `fix` for bug fixes, and an appropriate type such as `docs`, `refactor`, `test`, `chore`, `build`, or `ci` for other changes. Mark breaking changes with `!` before the colon or a `BREAKING CHANGE: <description>` footer. Separate any optional body or footers from the subject with a blank line.
+
 ## Mockups
 
 Save downloaded design mockups in the root `mockups/` directory.
