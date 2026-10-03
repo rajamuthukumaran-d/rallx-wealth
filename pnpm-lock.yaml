@@ -32,6 +32,9 @@ importers:
       '@rallx-wealth/types-database':
         specifier: workspace:*
         version: link:../../packages/types-database
+      '@rallx-wealth/utils-database':
+        specifier: workspace:*
+        version: link:../../packages/utils-database
       dotenv:
         specifier: ^17.2.0
         version: 17.4.2
@@ -75,6 +78,9 @@ importers:
       '@rallx-wealth/types-database':
         specifier: workspace:*
         version: link:../../packages/types-database
+      '@rallx-wealth/utils-database':
+        specifier: workspace:*
+        version: link:../../packages/utils-database
       '@react-native-community/datetimepicker':
         specifier: 8.4.4
         version: 8.4.4(expo@54.0.33)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -223,6 +229,9 @@ importers:
       '@rallx-wealth/types-database':
         specifier: workspace:*
         version: link:../../packages/types-database
+      '@rallx-wealth/utils-database':
+        specifier: workspace:*
+        version: link:../../packages/utils-database
       next:
         specifier: ^16.0.0
         version: 16.3.8(@babel/core@7.29.0)(@types/node@22.20.4)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -265,6 +274,25 @@ importers:
         version: 8.71.0(eslint@9.39.3(jiti@1.21.7))(typescript@5.9.3)
 
   packages/types-database:
+    devDependencies:
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.3(jiti@1.21.7)
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.0.0
+        version: 8.71.0(eslint@9.39.3(jiti@1.21.7))(typescript@5.9.3)
+
+  packages/utils-database:
+    dependencies:
+      '@rallx-wealth/types-common':
+        specifier: workspace:*
+        version: link:../types-common
+      '@rallx-wealth/types-database':
+        specifier: workspace:*
+        version: link:../types-database
     devDependencies:
       eslint:
         specifier: ^9.0.0

@@ -1,3 +1,4 @@
+import { calculateAssetBalance, normalizeCurrency } from "@rallx-wealth/utils-database";
 import type { AssetFormData } from "@rallx-wealth/types-common/forms";
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
@@ -43,7 +44,7 @@ export function useAssets(onlyIncludedInBal = true): AssetsData {
     return () => subscription.unsubscribe();
   }, [onlyIncludedInBal]);
 
-  const totalBalance = assets.reduce((sum, a) => sum + a.balance, 0);
+  const totalBalance = calculateAssetBalance(assets);
 
   return { assets, totalBalance, isLoading };
 }
@@ -86,7 +87,7 @@ export function useAsset(id: string): AssetRecord {
 function applyAssetFields(record: Asset, data: AssetFormData) {
   record.name = data.name;
   record.type = data.type;
-  record.currency = data.currency?.trim() || DEFAULT_CURRENCY;
+  record.currency = normalizeCurrency(data.currency, DEFAULT_CURRENCY);
   record.balance = data.balance;
   record.minBalance = data.minBalance;
   record.includeInBal = data.includeInBal;

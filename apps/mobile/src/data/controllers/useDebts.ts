@@ -1,3 +1,4 @@
+import { calculateDebtTotals, normalizeCurrency } from "@rallx-wealth/utils-database";
 import type { DebtFormData } from "@rallx-wealth/types-common/forms";
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
@@ -47,9 +48,7 @@ export function useDebts(statusFilter: "active" | "all" = "active"): DebtsData {
     return () => subscription.unsubscribe();
   }, [statusFilter]);
 
-  const totalAmount = debts.reduce((sum, d) => sum + d.totalAmount, 0);
-  const totalRemaining = debts.reduce((sum, d) => sum + d.remainingAmount, 0);
-  const totalEmi = debts.reduce((sum, d) => sum + (d.emiAmount ?? 0), 0);
+  const { totalAmount, totalRemaining, totalEmi } = calculateDebtTotals(debts);
 
   return { debts, totalAmount, totalRemaining, totalEmi, isLoading };
 }
@@ -92,7 +91,7 @@ export function useDebt(id: string): DebtRecord {
 function applyDebtFields(record: Debt, data: DebtFormData) {
   record.name = data.name;
   record.type = data.type;
-  record.currency = data.currency?.trim() || DEFAULT_CURRENCY;
+  record.currency = normalizeCurrency(data.currency, DEFAULT_CURRENCY);
   record.status = data.status;
   record.totalAmount = data.totalAmount;
   record.remainingAmount = data.remainingAmount;

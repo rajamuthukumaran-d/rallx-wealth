@@ -11,6 +11,7 @@
   "dependencies": {
     "@rallx-wealth/types-common": "workspace:*",
     "@rallx-wealth/types-database": "workspace:*",
+    "@rallx-wealth/utils-database": "workspace:*",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"

@@ -5,13 +5,14 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
-    "dev": { "cache": false, "persistent": true },
+    "dev": { "dependsOn": ["^build"], "cache": false, "persistent": true },
     "@rallx-wealth/api#dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true,
       "passThroughEnv": ["PORT", "HOST", "MONGODB_URI"]
     },
     "lint": { "dependsOn": ["^lint"] },
-    "typecheck": { "dependsOn": ["^typecheck"], "outputs": [] }
+    "typecheck": { "dependsOn": ["^typecheck", "^build"], "outputs": [] }
   }
 }

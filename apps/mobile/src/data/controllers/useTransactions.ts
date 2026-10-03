@@ -1,3 +1,4 @@
+import { prepareTransactionFields } from "@rallx-wealth/utils-database";
 import type { TransactionFormData } from "@rallx-wealth/types-common/forms";
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
@@ -8,22 +9,20 @@ import TransactionAmount from "../models/TransactionAmount";
 export type { PaymentRow, TransactionFormData } from "@rallx-wealth/types-common/forms";
 
 export async function createTransaction(data: TransactionFormData): Promise<void> {
-  if (!data.categoryId) throw new Error('categoryId is required');
-
-  const totalAmount = data.payments.reduce((sum, p) => sum + p.amount, 0);
+  const fields = prepareTransactionFields(data);
 
   await database.write(async () => {
     const transaction = await database
       .get<Transaction>("transactions")
       .create((record) => {
-        record.name = (data.name.trim() || null) as any;
-        record.type = data.type;
-        record.totalAmount = totalAmount;
-        record.date = data.date as any;
-        record.note = data.note;
-        record.isRefund = data.isRefund;
+        record.name = (fields.name ?? null) as any;
+        record.type = fields.type;
+        record.totalAmount = fields.totalAmount;
+        record.date = fields.date as any;
+        record.note = fields.note;
+        record.isRefund = fields.isRefund;
         record.isDeleted = false;
-        (record as any)._raw.category_id = data.categoryId;
+        (record as any)._raw.category_id = fields.categoryId;
       });
 
     for (const payment of data.payments) {

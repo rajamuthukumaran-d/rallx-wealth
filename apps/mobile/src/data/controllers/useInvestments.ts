@@ -1,3 +1,4 @@
+import { calculateInvestmentTotals, planInvestmentSale, sortByCreatedAt } from "@rallx-wealth/utils-database";
 import type { InvestmentFormData, SellInvestmentData } from "@rallx-wealth/types-common/forms";
 import { Q } from "@nozbe/watermelondb";
 import { useEffect, useState } from "react";
@@ -35,9 +36,7 @@ export function useInvestments(): InvestmentsData {
     return () => subscription.unsubscribe();
   }, []);
 
-  const totalInvested = investments.reduce((sum, i) => sum + i.investedAmount, 0);
-  const totalCurrentValue = investments.reduce((sum, i) => sum + i.currentValue, 0);
-  const totalGainLoss = totalCurrentValue - totalInvested;
+  const { totalInvested, totalCurrentValue, totalGainLoss } = calculateInvestmentTotals(investments);
 
   return { investments, totalInvested, totalCurrentValue, totalGainLoss, isLoading };
 }
@@ -131,10 +130,7 @@ export function useInvestmentGroup(symbol?: string, name?: string) {
     const subscription = query
       .observeWithColumns(["invested_amount", "current_value", "quantity", "is_deleted", "created_at"])
       .subscribe((data) => {
-        const sorted = [...data].sort(
-          (a, b) => new Date(a.createdAt as any).getTime() - new Date(b.createdAt as any).getTime(),
-        );
-        setInvestments(sorted);
+        setInvestments(sortByCreatedAt(data));
         setIsLoading(false);
       });
 
@@ -153,53 +149,16 @@ export async function sellInvestment(data: SellInvestmentData): Promise<void> {
     : collection.query(Q.where("is_deleted", false), Q.where("name", name))
   ).fetch();
 
-  lots.sort(
-    (a, b) => new Date(a.createdAt as any).getTime() - new Date(b.createdAt as any).getTime(),
-  );
-
   if (lots.length === 0) return;
 
   await database.write(async () => {
-    if (unitsSold !== undefined && unitsSold > 0) {
-      let remaining = unitsSold;
-      for (const lot of lots) {
-        if (remaining <= 0) break;
-        const qty = lot.quantity ?? 0;
-        if (qty <= 0) continue;
-
-        if (qty <= remaining) {
-          remaining -= qty;
-          await lot.update((r) => { r.isDeleted = true; });
-        } else {
-          const proportion = remaining / qty;
-          const newQty = qty - remaining;
-          remaining = 0;
-          await lot.update((r) => {
-            r.quantity = newQty as any;
-            r.investedAmount = lot.investedAmount * (1 - proportion);
-            r.currentValue = lot.currentValue * (1 - proportion);
-          });
-        }
-      }
-    } else if (soldAmount !== undefined && soldAmount > 0) {
-      let remaining = soldAmount;
-      for (const lot of lots) {
-        if (remaining <= 0) break;
-
-        if (lot.investedAmount <= remaining) {
-          remaining -= lot.investedAmount;
-          await lot.update((r) => { r.isDeleted = true; });
-        } else {
-          const proportion = remaining / lot.investedAmount;
-          const newInvestedAmount = lot.investedAmount - remaining;
-          remaining = 0;
-          await lot.update((r) => {
-            r.investedAmount = newInvestedAmount;
-            r.currentValue = lot.currentValue * (1 - proportion);
-            if (lot.quantity != null) r.quantity = (lot.quantity * (1 - proportion)) as any;
-          });
-        }
-      }
+    for (const { lot, changes } of planInvestmentSale(lots, { unitsSold, soldAmount })) {
+      await lot.update((record) => {
+        if (changes.isDeleted !== undefined) record.isDeleted = changes.isDeleted;
+        if (changes.quantity !== undefined) record.quantity = changes.quantity;
+        if (changes.investedAmount !== undefined) record.investedAmount = changes.investedAmount;
+        if (changes.currentValue !== undefined) record.currentValue = changes.currentValue;
+      });
     }
   });
 }

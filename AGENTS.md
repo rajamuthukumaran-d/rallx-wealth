@@ -9,6 +9,7 @@ Guidance for work in the Rallx Wealth monorepo.
 - `apps/api` — Express TypeScript API service with the MongoDB Node.js driver.
 - `packages/types-database` — platform-neutral database record contracts.
 - `packages/types-common` — shared form inputs and common domain types.
+- `packages/utils-database` — pure write preparation, FIFO sale planning, and record summary helpers.
 - `packages/*` — platform-neutral shared packages. Keep platform-specific code out of these packages.
 
 Use pnpm workspaces and Turbo from the repository root. The mobile app uses native WatermelonDB, Expo file and sharing APIs, and a patched native ZIP package. Do not import its models, controllers, or components directly into the web app or API. Extract genuinely cross-platform domain types or pure utilities into a shared package when needed.

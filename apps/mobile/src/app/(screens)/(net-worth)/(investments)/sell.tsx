@@ -1,3 +1,4 @@
+import { planInvestmentSale } from "@rallx-wealth/utils-database";
 // src/app/(screens)/(net-worth)/(investments)/sell.tsx
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { FifoLotRow, FifoLotPreview } from '@/components/NetWorth/Investments/FifoLotRow';
@@ -20,37 +21,9 @@ function computeFifoPreview(
   unitsSold: number | undefined,
   soldAmount: number | undefined,
 ): FifoLotPreview[] {
-  const result: FifoLotPreview[] = [];
-
-  if (unitsSold !== undefined && unitsSold > 0) {
-    let remaining = unitsSold;
-    for (const lot of lots) {
-      if (remaining <= 0) break;
-      const qty = lot.quantity ?? 0;
-      if (qty <= 0) continue;
-      if (qty <= remaining) {
-        result.push({ lot, unitsReduced: qty, fullyConsumed: true });
-        remaining -= qty;
-      } else {
-        result.push({ lot, unitsReduced: remaining, fullyConsumed: false });
-        remaining = 0;
-      }
-    }
-  } else if (soldAmount !== undefined && soldAmount > 0) {
-    let remaining = soldAmount;
-    for (const lot of lots) {
-      if (remaining <= 0) break;
-      if (lot.investedAmount <= remaining) {
-        result.push({ lot, amountReduced: lot.investedAmount, fullyConsumed: true });
-        remaining -= lot.investedAmount;
-      } else {
-        result.push({ lot, amountReduced: remaining, fullyConsumed: false });
-        remaining = 0;
-      }
-    }
-  }
-
-  return result;
+  return planInvestmentSale(lots, { unitsSold, soldAmount }).map(
+    ({ lot, unitsReduced, amountReduced, fullyConsumed }) => ({ lot, unitsReduced, amountReduced, fullyConsumed }),
+  );
 }
 
 export default function SellInvestmentScreen() {

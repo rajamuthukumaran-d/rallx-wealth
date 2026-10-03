@@ -12,7 +12,7 @@ The mobile app is intentionally isolated: its database, backup/restore, and devi
 
 ## Shared types
 
-`@rallx-wealth/types-database` contains platform-neutral database records; `@rallx-wealth/types-common` contains form inputs and common domain types. See [database types](packages/types-database/README.md) and [common types](packages/types-common/README.md) for usage. MongoDB persistence types live in `apps/api/src/data/mongodbTypes.ts`. Native models, schemas, migrations, and controllers remain mobile-local.
+`@rallx-wealth/types-database` contains platform-neutral database records; `@rallx-wealth/types-common` contains form inputs and common domain types. See [database types](packages/types-database/README.md) and [common types](packages/types-common/README.md) for usage. `@rallx-wealth/utils-database` contains reusable write preparation, FIFO sale planning, and summary calculations; see [database utilities](packages/utils-database/README.md). MongoDB persistence types live in `apps/api/src/data/mongodbTypes.ts`. Native models, schemas, migrations, and controllers remain mobile-local.
 
 ## Setup
 
@@ -23,7 +23,7 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev` starts the web app at http://localhost:3000 and the API at http://127.0.0.1:4000. Copy `apps/api/.env.example` to `apps/api/.env` and set `MONGODB_URI` to enable database connectivity.
+`pnpm dev` builds shared runtime utilities, watches them for changes, and starts the web app at http://localhost:3000 and the API at http://127.0.0.1:4000. Copy `apps/api/.env.example` to `apps/api/.env` and set `MONGODB_URI` to enable database connectivity.
 
 The root `pnpm start`, `pnpm ios`, and `pnpm android` commands remain shortcuts for the mobile app. `pnpm web` starts the dedicated Next.js app; use `pnpm --filter @rallx-wealth/mobile web` for Expo web.
 

@@ -17,6 +17,7 @@
     "@pchmn/expo-material3-theme": "^1.4.0",
     "@rallx-wealth/types-common": "workspace:*",
     "@rallx-wealth/types-database": "workspace:*",
+    "@rallx-wealth/utils-database": "workspace:*",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-vector-icons/material-design-icons": "^12.4.0",
     "@react-navigation/bottom-tabs": "^7.4.0",
