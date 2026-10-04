@@ -1,0 +1,10 @@
+{
+  "ignore_dirs": [
+    "apps/mobile/android/.gradle",
+    "apps/mobile/android/build",
+    "apps/mobile/android/app/build",
+    "apps/mobile/ios/build",
+    "apps/mobile/ios/Pods",
+    "apps/web/.next"
+  ]
+}

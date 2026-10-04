@@ -1,0 +1,30 @@
+{
+  "name": "@rallx-wealth/utils-database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-native": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src test",
+    "test": "pnpm build && node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@rallx-wealth/types-common": "workspace:*",
+    "@rallx-wealth/types-database": "workspace:*"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.0.0"
+  }
+}
