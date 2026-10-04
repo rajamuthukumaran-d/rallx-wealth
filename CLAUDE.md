@@ -1,118 +1,65 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for work in the Rallx Wealth monorepo.
 
-## Project Overview
+## Workspace layout
 
-**rallx-wealth** is an offline-first React Native (Expo) mobile app for tracking personal wealth: income, expenses, investments, assets, and debts. It runs on iOS and Android.
+- `apps/mobile` — existing offline-first Expo SDK 54 / Expo Router app for iOS and Android.
+- `apps/web` — Next.js web app.
+- `apps/api` — Express TypeScript API service with the MongoDB Node.js driver.
+- `packages/types-database` — platform-neutral database record contracts.
+- `packages/types-common` — shared form inputs and common domain types.
+- `packages/utils-database` — pure write preparation, FIFO sale planning, and record summary helpers.
+- `packages/*` — platform-neutral shared packages. Keep platform-specific code out of these packages.
 
-**Stack:** Expo (SDK 54) + Expo Router, React Native 0.81, WatermelonDB (SQLite), NativeWind v4, React Native Paper (MD3), TypeScript, pnpm.
+Use pnpm workspaces and Turbo from the repository root. The mobile app uses native WatermelonDB, Expo file and sharing APIs, and a patched native ZIP package. Do not import its models, controllers, or components directly into the web app or API. Extract genuinely cross-platform domain types or pure utilities into a shared package when needed.
 
 ## Commands
 
 ```bash
-pnpm start           # Start Expo dev server
-pnpm ios             # Run on iOS simulator
-pnpm android         # Run on Android emulator
-pnpm lint            # ESLint via expo lint
+pnpm install
+pnpm dev                       # start web and API in parallel
+pnpm --filter @rallx-wealth/mobile start
+pnpm --filter @rallx-wealth/mobile ios
+pnpm --filter @rallx-wealth/mobile android
+pnpm --filter @rallx-wealth/mobile web
+pnpm build
+pnpm lint
+pnpm typecheck
 ```
 
-> No test runner is configured yet. The `src/data/models/__tests__/` directory exists but is empty.
+Expo Application Services commands should run from `apps/mobile`, where `app.json` and `eas.json` live. The dedicated web app is `apps/web`; `@rallx-wealth/mobile web` remains Expo's web target and is separate.
 
-## Architecture
+## Mobile app
 
-### Routing (Expo Router file-based)
-```
-src/app/
-  _layout.tsx              # Root layout — theme providers (Paper + Navigation)
-  index.tsx                # Redirects to /(tabs)
-  (tabs)/
-    _layout.tsx            # MaterialBottomTabs, 4 tabs
-    index.tsx              # Home (stub)
-    transactions.tsx       # Transactions list (stub)
-    net-worth.tsx          # Net Worth breakdown (stub)
-    settings.tsx           # Settings (implemented)
-  (models)/
-    (backup-restore)/index.tsx   # DB export/import UI
-    (category)/
-      index.tsx            # Category list + CRUD
-      [id].tsx             # Add/edit category form
-```
+- Expo Router screens and layouts live in `apps/mobile/src/app/`.
+- Data code lives in `apps/mobile/src/data/`; keep WatermelonDB data access in its existing controllers and models.
+- The schema and all model definitions are mobile-local. SQLite is the local offline store; the API workspace currently contains only a health endpoint and is not wired to the mobile app.
+- Models use legacy WatermelonDB decorators imported from `@nozbe/watermelondb/decorators`. Decorator support is configured in `apps/mobile/babel.config.js` and `apps/mobile/tsconfig.json`.
+- The mobile `@/*` alias maps to `apps/mobile/src/*`.
+- Use Expo-compatible package versions and `pnpm --filter @rallx-wealth/mobile exec expo install <package>` when adding native or Expo packages.
 
-Modal screens live under `(models)/` as full-screen routes, not overlaid modals. Navigate with `router.push('/(models)/(category)')` and dismiss with `router.back()`.
+## Web and API
 
-### Data Layer (`src/data/`)
+- Keep web-only pages and styles under `apps/web/app/`.
+- Keep API routes and server code under `apps/api/src/`; do not add authentication or finance business logic until its design is agreed.
+- The API currently serves `GET /health` on port 4000. When `MONGODB_URI` is configured it checks the database connection at startup. The web app is a landing-page scaffold and does not yet call the API.
 
-- **`index.ts`** — Creates `Database` instance with `SQLiteAdapter`. All 7 model classes registered here. JSI mode is commented out but available.
-- **`schema.ts`** — WatermelonDB schema v1. Every table includes `created_at` (number), `updated_at` (number), `is_deleted` (boolean) for sync.
-- **`seed.ts`** — Seeds 8 default categories on first launch (guarded by count check).
-- **`backupService.ts`** — Export zips DB files (.db, .db-shm, .db-wal) into a `.rallxdb` archive via `react-native-zip-archive`; import extracts and overwrites live files, then requires app restart.
-- **`models/`** — One class per table using WatermelonDB decorators (`@text`, `@field`, `@date`, `@relation`, `@children`).
+## Data / security
 
-### WatermelonDB Model Patterns
+Financial data is sensitive. Avoid logging account or transaction data, and keep secrets in local environment files (ignored by git). Do not commit credentials or real financial records.
 
-Models use legacy decorator syntax. Always import decorators from `@nozbe/watermelondb/decorators`:
+## Mockups
 
-```ts
-import { Model } from '@nozbe/watermelondb'
-import { text, field, date, readonly, relation, children } from '@nozbe/watermelondb/decorators'
+Save downloaded design mockups in the root `mockups/` directory.
 
-export default class Category extends Model {
-  static table = 'categories'
-  @text('name') name!: string
-  @readonly @date('created_at') createdAt!: Date
-}
-```
+<!-- BEGIN:turborepo-agent-rules -->
 
-One-to-many relationships (e.g. Transaction → TransactionAmounts) use `@children`:
-```ts
-@children('transaction_amounts') amounts!: Query<TransactionAmount>
-```
+# This is NOT the Turborepo you know
 
-Foreign keys use `@relation`:
-```ts
-@relation('categories', 'category_id') category!: Relation<Category>
-```
+Turborepo configuration, task behavior, and CLI commands can vary between installed versions and may differ from your training data. Resolve the `turbo` package from this file's directory or relevant workspace; in monorepos, it may not be visible from the repository root. For example, run `node -p "require.resolve('turbo/package.json')"` from a workspace that depends on `turbo`.
 
-### Theming
+Read `docs/README.md` inside that installed package first, then read the relevant pages from its `docs/` directory before changing Turborepo configuration or commands. Heed deprecation notices. These bundled docs match the installed package version and are available without network access.
 
-- `src/app/_layout.tsx` sets up Material Design 3 dynamic theming via `@pchmn/expo-material3-theme`.
-- Access theme colors in components with `useTheme()` from `react-native-paper`.
-- Use NativeWind `className` for layout/spacing, Paper components for interactive UI.
-- Tailwind content paths: `src/app/**` and `src/components/**`.
-
-### Path Alias
-
-`@/` maps to `src/` (configured in `tsconfig.json` and `babel.config.js`). Use `@/data/...`, `@/components/...`, etc.
-
-### Decorator Support
-
-`babel.config.js` includes `@babel/plugin-proposal-decorators` with `{ legacy: true }`. `tsconfig.json` has `experimentalDecorators: true`. Both required for WatermelonDB models to work.
-
-## Database Schema (7 tables)
-
-| Table | Key fields |
-|---|---|
-| `categories` | `name`, `icon`, `type` (income/expense/transfer) |
-| `assets` | `name`, `type`, `balance`, `min_balance`, `include_in_bal`, `maturity_date`, `interest_rate` |
-| `investments` | `name`, `type`, `invested_amount`, `current_value`, `quantity`, `symbol`, `platform` |
-| `debts` | `name`, `type`, `total_amount`, `remaining_amount`, `emi_amount`, `due_date`, `auto_debit`, `asset_id`, `status` |
-| `transactions` | `total_amount`, `type` (income/expense/transfer), `date`, `category_id`, `note`, `is_refund`, `linked_transaction_id` |
-| `transaction_amounts` | `transaction_id`, `asset_id`, `debt_id`, `amount` — handles split payments |
-| `budgets` | `amount`, `period` (weekly/bi-weekly/monthly), `start_date`, `category_id`, `rollover_enabled` |
-
-## Development Guidelines
-
-### Data Manipulation with WatermelonDB
-
-For any data manipulation using WatermelonDB, create and use hooks in `src/data/hooks/` named after the model (e.g., `useCategories`, `useAssets`, `useTransactions`). This keeps data logic centralized and reusable across components.
-
-### Design Mockups
-
-When downloading mockups from Stitch, save them in the `mockups/` folder at the project root.
-
-## Implementation Status
-
-**Complete:** Schema, all models, WatermelonDB init, category CRUD, settings screen, backup/restore (export/import), default seed data, theming, navigation structure.
-
-**Not yet built:** Home screen, transactions list, transaction creation (incl. split payment UI), net worth screen, asset/investment/debt management, budget management, auto-deduction logic, analytics/stats, authentication, theme toggle UI.
+This block is written and re-added by `turbo` before repository-scoped commands when an AI agent is detected. In the Turborepo source repository, its template is defined in `crates/turborepo-cli/src/cli/agent_guidance.rs`. Removing the managed block while updates are enabled means a later qualifying invocation will add it again. Set `"agentGuidance": false` in the root `turbo.json` or `turbo.jsonc` to opt out; this does not remove an existing block. Keep the block committed with your work to avoid an uncommitted change on the next agent invocation.
+<!-- END:turborepo-agent-rules -->

@@ -2,12 +2,15 @@
 
 # dependencies
 node_modules/
+.pnpm-store/
 
 # Expo
 .expo/
 dist/
 web-build/
 expo-env.d.ts
+.next/
+next-env.d.ts
 
 # Native
 .kotlin/
@@ -31,16 +34,16 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+.env*
+!.env.example
+.turbo/
 
 # typescript
 *.tsbuildinfo
 
-app-example
-
 # generated native folders
-/ios
-/android
+/apps/mobile/ios
+/apps/mobile/android
 
 # temp and backups
 *.tmp
