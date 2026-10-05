@@ -1,44 +1,83 @@
 # Rallx Wealth
 
-Rallx Wealth is a pnpm + Turborepo monorepo containing the Expo mobile app, a Next.js web app, and an Express API backed by MongoDB.
+Rallx Wealth is a pnpm workspace managed with Turborepo. It contains an offline-first Expo app, a Next.js web app, an Express API, and shared TypeScript packages.
 
-## Apps
+## Repository layout
 
-- `apps/mobile` — the existing offline-first Expo app for iOS and Android. It uses WatermelonDB/SQLite locally.
-- `apps/web` — Next.js website scaffold.
-- `apps/api` — Express TypeScript API scaffold with `GET /health` and optional MongoDB startup connectivity.
+| Path | Purpose |
+| --- | --- |
+| `apps/mobile` | Expo Router app for iOS and Android. WatermelonDB stores data locally in SQLite. |
+| `apps/web` | Next.js web app. |
+| `apps/api` | Express API with a health endpoint and optional MongoDB connection. |
+| `packages/types-common` | Shared form inputs and domain types. |
+| `packages/types-database` | Platform-neutral database record contracts. |
+| `packages/utils-database` | Shared write preparation, FIFO sale planning, and record summaries. |
+| `packages/utils-frontend` | Shared display formatting, input parsing, grouping, and stock symbol helpers. |
 
-The mobile app is intentionally isolated: its database, backup/restore, and device integrations depend on React Native and native modules. All three apps consume shared database and domain contracts from `packages/types-database` and `packages/types-common`. The web app and API do not yet connect to each other.
+The mobile app keeps its WatermelonDB models, schema, migrations, controllers, backup and restore, and native integrations in `apps/mobile`. The web app and API do not currently connect to one another, and the API does not yet expose finance or authentication features.
 
-## Shared types
+## Requirements
 
-`@rallx-wealth/types-database` contains platform-neutral database records; `@rallx-wealth/types-common` contains form inputs and common domain types. See [database types](packages/types-database/README.md) and [common types](packages/types-common/README.md) for usage. `@rallx-wealth/utils-database` contains reusable write preparation, FIFO sale planning, and summary calculations; see [database utilities](packages/utils-database/README.md). `@rallx-wealth/utils-frontend` contains shared display formatting, input parsing, grouping, and stock symbol helpers for mobile and web; see [frontend utilities](packages/utils-frontend/README.md). MongoDB persistence types live in `apps/api/src/data/mongodbTypes.ts`. Native models, schemas, migrations, and controllers remain mobile-local.
+- Node.js 20.19 or newer
+- pnpm 10.21.0 (the version pinned by the root `package.json`)
 
-## Setup
+## Install and start
 
-Requirements: Node.js 20.19 or newer (Expo SDK 54), pnpm 10.21 or compatible.
+Install dependencies from the repository root:
 
 ```bash
 pnpm install
+```
+
+Start the web app and API together:
+
+```bash
 pnpm dev
 ```
 
-`pnpm dev` builds shared runtime utilities, watches them for changes, and starts the web app at http://localhost:3000 and the API at http://127.0.0.1:4000. Copy `apps/api/.env.example` to `apps/api/.env` and set `MONGODB_URI` to enable database connectivity.
+The web app is available at [http://localhost:3000](http://localhost:3000). The API listens at [http://127.0.0.1:4000](http://127.0.0.1:4000). Turbo builds the shared runtime packages before starting dependent apps and watches them for changes.
 
-The root `pnpm start`, `pnpm ios`, and `pnpm android` commands remain shortcuts for the mobile app. `pnpm web` starts the dedicated Next.js app; use `pnpm --filter @rallx-wealth/mobile web` for Expo web.
-
-Run one app with a workspace filter:
+The API can run without MongoDB. To enable its startup connection check, copy the example environment file and set `MONGODB_URI`:
 
 ```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+When configured, the API connects to MongoDB and pings it at startup. The example URI points to a local database named `rallx_wealth`; make sure MongoDB is running or replace the URI with your connection string. Keep credentials in the ignored `.env` file and do not commit them.
+
+Check the API health endpoint with:
+
+```bash
+curl http://127.0.0.1:4000/health
+```
+
+It returns `status: "ok"` and reports the database as `connected` when a MongoDB URI is configured, or `not_configured` otherwise.
+
+## Run an app on its own
+
+Run a workspace package with a pnpm filter:
+
+```bash
+# Expo mobile app
 pnpm --filter @rallx-wealth/mobile start
 pnpm --filter @rallx-wealth/mobile ios
 pnpm --filter @rallx-wealth/mobile android
 pnpm --filter @rallx-wealth/mobile web
+
+# Next.js web app
 pnpm --filter @rallx-wealth/web dev
+
+# Express API
 pnpm --filter @rallx-wealth/api dev
 ```
 
-Run workspace tasks with Turbo:
+At the repository root, `pnpm start`, `pnpm ios`, and `pnpm android` are shortcuts for the mobile app; `pnpm web` starts the Next.js app. Expo's web target is separate and starts with `pnpm --filter @rallx-wealth/mobile web`.
+
+Run EAS commands from `apps/mobile`, where the Expo and EAS configuration files are located.
+
+## Workspace checks
+
+Run the workspace build, lint, and type checks from the root:
 
 ```bash
 pnpm build
@@ -46,4 +85,20 @@ pnpm lint
 pnpm typecheck
 ```
 
-Run EAS commands from `apps/mobile` so Expo configuration is discovered correctly.
+The shared utility packages also define focused tests that can be run individually:
+
+```bash
+pnpm --filter @rallx-wealth/utils-database test
+pnpm --filter @rallx-wealth/utils-frontend test
+```
+
+## Shared packages
+
+Apps should use platform-neutral contracts and pure utilities from `packages/*`. Keep React Native components, native APIs, and WatermelonDB code inside `apps/mobile`; do not import them into the web app or API. MongoDB-specific persistence types belong in `apps/api/src/data/mongodbTypes.ts`.
+
+Package documentation:
+
+- [Common types](packages/types-common/README.md)
+- [Database types](packages/types-database/README.md)
+- [Database utilities](packages/utils-database/README.md)
+- [Frontend utilities](packages/utils-frontend/README.md)
